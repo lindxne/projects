@@ -8,16 +8,20 @@ export const dynamic = "force-dynamic";
 const SIGNED_TTL_SECONDS = 60 * 60 * 24 * 7;
 
 const PAGE = 500;
+const FIRST_ID = "00000000-0000-0000-0000-000000000000";
 
-async function readAll<T>(
-  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+/** Reads a whole table by id cursor, so rows added or deleted during the export never shift a page. */
+async function readAll<T extends { id: string }>(
+  page: (afterId: string) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
 ): Promise<{ data: T[]; error: { message: string } | null }> {
   const rows: T[] = [];
-  for (let from = 0; ; from += PAGE) {
-    const { data, error } = await page(from, from + PAGE - 1);
+  for (let afterId = FIRST_ID; ; ) {
+    const { data, error } = await page(afterId);
     if (error || !data) return { data: rows, error: error ?? { message: "нет данных" } };
     rows.push(...data);
-    if (data.length < PAGE) return { data: rows, error: null };
+    const last = data.at(-1);
+    if (data.length < PAGE || !last) return { data: rows, error: null };
+    afterId = last.id;
   }
 }
 
@@ -34,21 +38,13 @@ export async function GET(request: Request) {
 
   // PostgREST caps every response (1000 rows by default), so each table is read page by page.
   const [releases, tracks, posts] = await Promise.all([
-    readAll((from, to) =>
-      supabase
-        .from("releases")
-        .select(RELEASE_COLUMNS)
-        .order("release_date", { ascending: true, nullsFirst: false })
-        .order("id")
-        .range(from, to),
-    ),
-    readAll((from, to) =>
-      supabase.from("tracks").select(TRACK_COLUMNS).order("track_number", { ascending: true }).order("id").range(from, to),
-    ),
-    readAll((from, to) =>
-      supabase.from("posts").select(POST_COLUMNS).order("created_at", { ascending: true }).order("id").range(from, to),
-    ),
+    readAll((afterId) => supabase.from("releases").select(RELEASE_COLUMNS).gt("id", afterId).order("id").limit(PAGE)),
+    readAll((afterId) => supabase.from("tracks").select(TRACK_COLUMNS).gt("id", afterId).order("id").limit(PAGE)),
+    readAll((afterId) => supabase.from("posts").select(POST_COLUMNS).gt("id", afterId).order("id").limit(PAGE)),
   ]);
+  releases.data.sort((a, b) => (a.release_date ?? "9999").localeCompare(b.release_date ?? "9999") || a.id.localeCompare(b.id));
+  tracks.data.sort((a, b) => (a.track_number ?? 0) - (b.track_number ?? 0) || a.id.localeCompare(b.id));
+  posts.data.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at) || a.id.localeCompare(b.id));
   const failed = releases.error ?? tracks.error ?? posts.error;
   if (failed) {
     return NextResponse.json({ error: `Не удалось прочитать архив: ${failed.message}` }, { status: 500 });
