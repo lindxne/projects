@@ -43,6 +43,8 @@ revoke all on function public.is_owner() from public, anon;
 grant execute on function public.is_owner() to authenticated, service_role;
 
 -- No public registration: auth.users accepts only the owner's e-mail.
+-- Sign-in is by e-mail link or code only, so no account keeps a password: one chosen by
+-- whoever signed up first with the owner's address stops working before it is ever stored.
 create function private.enforce_single_user()
 returns trigger
 language plpgsql
@@ -54,12 +56,13 @@ begin
      or not exists (select 1 from private.owner o where o.email = lower(new.email)) then
     raise exception 'Lindone is a single-user app: sign-ups are closed';
   end if;
+  new.encrypted_password := null;
   return new;
 end;
 $$;
 
 create trigger enforce_single_user
-  before insert or update of email on auth.users
+  before insert or update of email, encrypted_password on auth.users
   for each row execute function private.enforce_single_user();
 
 -- ---------------------------------------------------------------------------
