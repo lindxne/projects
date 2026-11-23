@@ -31,16 +31,7 @@ export async function GET(request: NextRequest) {
     ok = !error;
   }
 
-  const url = request.nextUrl.clone();
-  url.search = "";
-  if (ok) {
-    const [pathname, query] = next.split("?");
-    url.pathname = pathname ?? "/";
-    url.search = query ? `?${query}` : "";
-  } else {
-    url.pathname = "/login";
-    url.searchParams.set("error", "link");
-  }
+  const url = new URL(ok ? next : "/login?error=link", request.nextUrl.origin);
   const response = NextResponse.redirect(url);
   if (ok) response.cookies.delete(NEXT_COOKIE);
   return response;
