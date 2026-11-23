@@ -103,6 +103,11 @@ export async function uploadFile({
   const endpoint = `${SUPABASE_URL}/storage/v1/object/${bucket}/${path}`;
 
   await new Promise<void>((resolve, reject) => {
+    // The request never got an answer, yet the server may have stored the file already.
+    const interrupted = (message: string) => {
+      discardUpload(bucket, path);
+      reject(new UploadError(message, "network"));
+    };
     const xhr = new XMLHttpRequest();
     xhr.open("POST", endpoint);
     xhr.setRequestHeader("Authorization", `Bearer ${session.access_token}`);
@@ -122,11 +127,9 @@ export async function uploadFile({
       }
       reject(toUploadError(xhr.status, xhr.responseText));
     };
-    xhr.onerror = () =>
-      reject(new UploadError("Сеть оборвалась во время загрузки. Проверь соединение и повтори.", "network"));
-    xhr.ontimeout = () =>
-      reject(new UploadError("Загрузка заняла слишком много времени. Повтори попытку.", "network"));
-    xhr.onabort = () => reject(new UploadError("Загрузка отменена.", "network"));
+    xhr.onerror = () => interrupted("Сеть оборвалась во время загрузки. Проверь соединение и повтори.");
+    xhr.ontimeout = () => interrupted("Загрузка заняла слишком много времени. Повтори попытку.");
+    xhr.onabort = () => interrupted("Загрузка отменена.");
 
     if (signal?.aborted) {
       reject(new UploadError("Загрузка отменена.", "network"));
@@ -137,6 +140,21 @@ export async function uploadFile({
   });
 
   return mediaUrl(bucket, path);
+}
+
+/** Removes whatever an unanswered upload left behind: now, and again once the server has settled. */
+function discardUpload(bucket: Bucket, path: string): void {
+  const remove = () => {
+    void createClient()
+      .storage.from(bucket)
+      .remove([path])
+      .then(
+        () => undefined,
+        () => undefined,
+      );
+  };
+  remove();
+  window.setTimeout(remove, 5000);
 }
 
 function toUploadError(status: number, body: string): UploadError {
