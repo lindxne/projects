@@ -110,9 +110,9 @@ export function GlassProgressBar({
         className,
       )}
     >
-      <div className="relative h-[7px] w-full overflow-hidden rounded-full bg-black/45 shadow-[inset_0_1px_2px_rgba(0,0,0,0.7),0_1px_0_rgba(255,255,255,0.12)]">
+      <div className="relative h-[7px] w-full overflow-hidden rounded-full bg-white/[0.12] shadow-[inset_0_1px_2px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.22)]">
         <div
-          className="absolute inset-y-0 left-0 overflow-hidden rounded-full bg-gradient-to-r from-white/70 via-white to-white"
+          className="absolute inset-y-0 left-0 overflow-hidden rounded-full bg-gradient-to-r from-white/45 via-white/75 to-white/95 shadow-[0_0_10px_rgba(255,255,255,0.7)]"
           style={{ width: `${fraction * 100}%` }}
         >
           {animated ? (

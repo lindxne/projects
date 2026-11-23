@@ -74,7 +74,7 @@ export function TrackList({ release, tracks }: TrackListProps) {
             key={track.id}
             className={cx(
               "flex items-center gap-1 rounded-2xl border pr-1 transition-colors",
-              isCurrent ? "border-white/35 bg-white/[0.13]" : "border-transparent hover:bg-white/[0.07]",
+              isCurrent ? "glass-lit border-transparent" : "border-transparent hover:bg-white/[0.08]",
             )}
           >
             <button
@@ -100,7 +100,7 @@ export function TrackList({ release, tracks }: TrackListProps) {
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="block truncate font-semibold text-white">{track.title}</span>
+                <span className="glass-text block truncate font-semibold text-white">{track.title}</span>
                 {details ? <span className="block truncate text-xs text-mist-muted">{details}</span> : null}
               </span>
               <span className="flex-none text-sm tabular-nums text-mist-muted">{formatDuration(track.duration_sec)}</span>

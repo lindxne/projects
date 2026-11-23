@@ -14,9 +14,9 @@ const config: Config = {
           soft: "#100e1c",
         },
         mist: {
-          DEFAULT: "#f6f4ff",
-          muted: "#cfc9ea",
-          faint: "#a9a2cc",
+          DEFAULT: "rgba(250, 248, 255, 0.94)",
+          muted: "rgba(240, 236, 255, 0.78)",
+          faint: "rgba(236, 232, 255, 0.66)",
         },
         glow: {
           violet: "#7a45ff",

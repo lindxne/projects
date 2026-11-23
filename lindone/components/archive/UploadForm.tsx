@@ -251,7 +251,7 @@ export function UploadForm() {
         {items.length > 0 ? (
           <ul className="mt-3 grid gap-2" aria-label="Выбранные файлы">
             {items.map((item) => (
-              <li key={item.key} className="flex items-center gap-3 rounded-2xl border border-white/12 bg-black/30 p-2">
+              <li key={item.key} className="flex items-center gap-3 glass-inset rounded-2xl p-2">
                 <span className="grid h-14 w-14 flex-none place-items-center overflow-hidden rounded-xl bg-white/10 text-mist-muted">
                   {item.preview ? (
                     // eslint-disable-next-line @next/next/no-img-element -- local preview

@@ -91,7 +91,7 @@ export function GlassModal({
           <motion.div
             // Plain dimming: a full-screen backdrop-filter under the glass panel's own one
             // makes Chrome mirror the page at the edges, and costs a lot on phones.
-            className="absolute inset-0 bg-black/65"
+            className="absolute inset-0 bg-black/50"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

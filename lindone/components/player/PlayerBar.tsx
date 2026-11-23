@@ -3,6 +3,7 @@
 import { motion, type PanInfo } from "framer-motion";
 import Link from "next/link";
 import { GlassLens } from "@/components/glass/GlassLens";
+import { LiquidLens } from "@/components/glass/LiquidLens";
 import { GlassSphere } from "@/components/glass/GlassSphere";
 import { ChevronUpIcon, QueueIcon } from "@/components/ui/icons";
 import { useCurrentTrack, usePlayer } from "@/lib/audio/player-store";
@@ -50,6 +51,7 @@ export function PlayerBar() {
           transition={{ type: "spring", stiffness: 260, damping: 26, delay: 0.1 }}
           className="glass glass-strong pointer-events-auto mx-auto max-w-6xl touch-pan-x md:!transform-none"
         >
+          <LiquidLens />
           <GlassLens tier="all" radius={28} opacity={0.75} />
 
           {/* Phone: compact bar. Tap or swipe up opens the full-screen player. */}
@@ -64,7 +66,7 @@ export function PlayerBar() {
               >
                 <CoverArt src={track?.coverUrl ?? null} alt="" className="w-12 flex-none rounded-2xl" depth={5} sizes={96} />
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-[15px] font-semibold text-white">{title}</span>
+                  <span className="glass-text block truncate text-[15px] font-semibold text-white">{title}</span>
                   <span className={`block truncate text-xs ${error ? "text-rose-200" : "text-mist-muted"}`}>{subtitle}</span>
                 </span>
                 {track ? <ChevronUpIcon size={16} className="flex-none text-mist-faint" /> : null}
@@ -81,11 +83,11 @@ export function PlayerBar() {
               <CoverArt src={track?.coverUrl ?? null} alt="" className="w-[58px] flex-none rounded-2xl" depth={7} sizes={116} />
               <div className="min-w-0">
                 {track ? (
-                  <Link href={`/releases/${track.releaseId}`} className="block truncate font-semibold text-white hover:underline">
+                  <Link href={`/releases/${track.releaseId}`} className="glass-text block truncate font-semibold text-white hover:underline">
                     {title}
                   </Link>
                 ) : (
-                  <p className="truncate font-semibold text-white">{title}</p>
+                  <p className="glass-text truncate font-semibold text-white">{title}</p>
                 )}
                 <p className={`truncate text-sm ${error ? "text-rose-200" : "text-mist-muted"}`} role={error ? "alert" : undefined}>
                   {subtitle}

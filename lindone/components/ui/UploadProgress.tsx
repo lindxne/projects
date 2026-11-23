@@ -2,7 +2,7 @@
 export function UploadProgress({ label, fraction }: { label: string; fraction: number | null }) {
   const percent = fraction === null ? null : Math.round(Math.min(Math.max(fraction, 0), 1) * 100);
   return (
-    <div role="status" aria-live="polite" className="rounded-2xl border border-white/12 bg-black/35 p-3.5">
+    <div role="status" aria-live="polite" className="glass-inset rounded-2xl p-3.5">
       <div className="flex items-center justify-between gap-3 text-sm">
         <span className="min-w-0 truncate text-mist">{label}</span>
         {percent !== null ? <span className="flex-none tabular-nums text-mist-muted">{percent}%</span> : null}
@@ -13,7 +13,7 @@ export function UploadProgress({ label, fraction }: { label: string; fraction: n
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percent ?? undefined}
-        className="relative mt-2.5 h-2 overflow-hidden rounded-full bg-black/50 shadow-[inset_0_1px_2px_rgba(0,0,0,0.7)]"
+        className="relative mt-2.5 h-2 overflow-hidden rounded-full bg-white/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.22)]"
       >
         {percent === null ? (
           <span className="absolute inset-y-0 w-1/3 animate-sheen rounded-full bg-white/80" />

@@ -43,7 +43,7 @@ export function TrackForm({ draft, index, total, disabled, onChange, onMove, onR
     : "Файл уже загружен";
 
   return (
-    <li className="rounded-3xl border border-white/12 bg-black/30 p-3">
+    <li className="glass-inset rounded-3xl p-3">
       <div className="flex items-start gap-2">
         <span className="grid h-12 w-8 flex-none place-items-center text-sm font-semibold tabular-nums text-mist-muted">
           {index + 1}

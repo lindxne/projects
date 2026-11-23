@@ -393,7 +393,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
           onDrop={onDrop("cover")}
           disabled={busy}
           className={cx(
-            "relative grid aspect-square w-full place-items-center overflow-hidden rounded-3xl border-2 border-dashed bg-black/35 transition-colors",
+            "relative grid aspect-square w-full place-items-center overflow-hidden rounded-3xl border-2 border-dashed bg-white/[0.06] shadow-[inset_0_2px_8px_rgba(0,0,0,0.35)] transition-colors",
             dragOver === "cover" ? "border-white bg-white/10" : coverPreview ? "border-transparent" : "border-white/25",
           )}
         >
