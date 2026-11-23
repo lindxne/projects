@@ -1,5 +1,6 @@
 import { ImageError } from "@/lib/image/resize";
 import { UploadError } from "@/lib/supabase/storage";
+import { VideoError } from "@/lib/video/ffmpeg";
 
 interface DbErrorLike {
   message: string;
@@ -32,7 +33,12 @@ export function describeDbError(error: DbErrorLike): string {
 
 /** A user-facing message for anything thrown during an upload / save flow. */
 export function describeError(error: unknown): string {
-  if (error instanceof UploadError || error instanceof ImageError || error instanceof SaveError) {
+  if (
+    error instanceof UploadError ||
+    error instanceof ImageError ||
+    error instanceof SaveError ||
+    error instanceof VideoError
+  ) {
     return error.message;
   }
   if (error instanceof Error) {
