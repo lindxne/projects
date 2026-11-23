@@ -3,8 +3,8 @@ import { createClient } from "@/lib/supabase/server";
 import { isBucket } from "@/lib/supabase/storage";
 
 // Signed URLs outlive the cached redirect, so a cached redirect never points to a dead link.
-const SIGNED_URL_TTL_SECONDS = 60 * 60 * 24;
-const REDIRECT_CACHE_SECONDS = 60 * 60 * 12;
+const SIGNED_URL_TTL_SECONDS = 60 * 60 * 2;
+const REDIRECT_CACHE_SECONDS = 60 * 60;
 
 /**
  * Stable private media URL: `/media/<bucket>/<path>` redirects the signed-in owner to a
