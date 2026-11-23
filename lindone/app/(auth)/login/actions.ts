@@ -1,8 +1,9 @@
 "use server";
 
-import { headers } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { NEXT_COOKIE, safeNext } from "@/lib/utils/safe-next";
 
 export interface LoginState {
   status: "idle" | "sent" | "error";
@@ -20,10 +21,6 @@ async function siteOrigin(): Promise<string> {
   return `${protocol}://${host}`;
 }
 
-function safeNext(value: FormDataEntryValue | null): string {
-  return typeof value === "string" && value.startsWith("/") && !value.startsWith("//") ? value : "/";
-}
-
 export async function requestMagicLink(_previous: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "")
     .trim()
@@ -38,12 +35,13 @@ export async function requestMagicLink(_previous: LoginState, formData: FormData
     return { status: "error", email, message: "Это личный архив: вход только для владельца." };
   }
 
+  const next = safeNext(formData.get("next"));
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
       shouldCreateUser: true,
-      emailRedirectTo: `${await siteOrigin()}/auth/confirm?next=${encodeURIComponent(safeNext(formData.get("next")))}`,
+      emailRedirectTo: `${await siteOrigin()}/auth/confirm?next=${encodeURIComponent(next)}`,
     },
   });
 
@@ -56,6 +54,11 @@ export async function requestMagicLink(_previous: LoginState, formData: FormData
           : `Не получилось отправить письмо: ${error.message}`;
     return { status: "error", email, message };
   }
+
+  // The e-mail link carries no destination, so remember it for when the link opens in this browser.
+  const cookieStore = await cookies();
+  if (next === "/") cookieStore.delete(NEXT_COOKIE);
+  else cookieStore.set(NEXT_COOKIE, next, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 });
 
   return {
     status: "sent",
@@ -81,5 +84,6 @@ export async function verifyCode(_previous: LoginState, formData: FormData): Pro
     return { status: "sent", email, message: "Код не подошёл или истёк. Запроси новое письмо." };
   }
 
+  (await cookies()).delete(NEXT_COOKIE);
   redirect(safeNext(formData.get("next")));
 }

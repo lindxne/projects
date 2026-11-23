@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { LoginForm } from "@/components/auth/LoginForm";
+import { safeNext } from "@/lib/utils/safe-next";
 
 export const metadata: Metadata = { title: "Вход" };
 
@@ -13,7 +14,6 @@ export default async function LoginPage({
   searchParams: Promise<{ next?: string; error?: string }>;
 }) {
   const { next, error } = await searchParams;
-  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
 
   return (
     <main className="relative grid min-h-dvh place-items-center px-5 py-10">
@@ -24,7 +24,7 @@ export default async function LoginPage({
         <p className="mb-6 mt-2 text-sm leading-relaxed text-mist-muted">
           Личное пространство. Ссылка для входа придёт на почту владельца.
         </p>
-        <LoginForm next={safeNext} initialError={error ? ERRORS[error] : undefined} />
+        <LoginForm next={safeNext(next)} initialError={error ? ERRORS[error] : undefined} />
       </section>
     </main>
   );
