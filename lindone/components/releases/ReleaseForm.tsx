@@ -98,6 +98,9 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
   const coverInput = useRef<HTMLInputElement>(null);
   const audioInput = useRef<HTMLInputElement>(null);
   const objectUrl = useRef<string | null>(null);
+  /** What the database references right now; diverges from the props after a partly failed save. */
+  const savedCover = useRef(release?.cover_url ?? null);
+  const savedTracks = useRef(tracks.map((track) => ({ id: track.id, audio_url: track.audio_url })));
   const busy = progress !== null || deleting;
 
   useEffect(
@@ -227,7 +230,8 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
     setError(null);
 
     const supabase = createClient();
-    const uploaded: string[] = [];
+    // Files uploaded in this attempt that no saved row references yet (removed if the save fails).
+    let uploaded: string[] = [];
     let createdReleaseId: string | null = null;
     const newDrafts = drafts.filter((draft) => draft.file);
     const totalBytes = (cover?.blob.size ?? 0) + newDrafts.reduce((sum, draft) => sum + (draft.file?.size ?? 0), 0);
@@ -236,7 +240,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
       setProgress({ label, fraction: totalBytes > 0 ? (doneBytes + size * fraction) / totalBytes : null });
 
     try {
-      let coverUrl = release?.cover_url ?? "";
+      let coverUrl = savedCover.current ?? "";
       if (cover) {
         assertUploadSize(cover.blob, "Обложка", 5);
         setProgress({ label: "Загружаю обложку…", fraction: 0 });
@@ -283,6 +287,15 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
         const { error: updateError } = await supabase.from("releases").update(fields).eq("id", release.id);
         if (updateError) throw new SaveError(describeDbError(updateError));
         releaseId = release.id;
+        if (cover) {
+          // The release now points at the new cover: it is no longer ours to roll back.
+          uploaded = uploaded.filter((url) => url !== coverUrl);
+          const previousCover = savedCover.current;
+          savedCover.current = coverUrl;
+          setCover(null);
+          if (previousCover && previousCover !== coverUrl) void removeMedia([previousCover]).catch(() => undefined);
+        }
+        usePlayer.getState().updateRelease(release.id, { coverUrl, releaseTitle: fields.title });
       } else {
         const { data, error: insertError } = await supabase.from("releases").insert(fields).select("id").single();
         if (insertError) throw new SaveError(describeDbError(insertError));
@@ -304,10 +317,20 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
         const { error: tracksError } = await supabase.from("tracks").upsert(rows);
         if (tracksError) throw new SaveError(describeDbError(tracksError));
       }
+      if (editing) {
+        // Tracks are saved: a retry must reuse these rows instead of uploading the files again.
+        uploaded = [];
+        setDrafts((current) =>
+          current.map((draft) => {
+            const row = rows.find((_, index) => drafts[index]?.key === draft.key);
+            return row ? { ...draft, id: row.id, audioUrl: row.audio_url, file: undefined } : draft;
+          }),
+        );
+      }
 
       // Everything is saved: now drop what is no longer referenced.
       const keptIds = new Set(rows.map((row) => row.id));
-      const removed = tracks.filter((track) => !keptIds.has(track.id));
+      const removed = savedTracks.current.filter((track) => !keptIds.has(track.id));
       if (removed.length > 0) {
         const { error: deleteError } = await supabase
           .from("tracks")
@@ -319,17 +342,14 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
         if (deleteError) throw new SaveError(describeDbError(deleteError));
         usePlayer.getState().forgetTracks(removed.map((track) => track.id));
       }
-      void removeMedia([
-        ...removed.map((track) => track.audio_url),
-        cover && release ? release.cover_url : null,
-      ]).catch(() => undefined);
+      savedTracks.current = rows.map((row) => ({ id: row.id, audio_url: row.audio_url }));
+      void removeMedia(removed.map((track) => track.audio_url)).catch(() => undefined);
 
       router.push(`/releases/${releaseId}`);
       router.refresh();
     } catch (caught) {
       // Roll back so a failed save leaves no orphaned files or half-created release.
-      const stale = editing ? uploaded.filter((url) => url !== release?.cover_url) : uploaded;
-      void removeMedia(stale).catch(() => undefined);
+      void removeMedia(uploaded).catch(() => undefined);
       if (createdReleaseId) await supabase.from("releases").delete().eq("id", createdReleaseId);
       setError(describeError(caught));
       setProgress(null);
