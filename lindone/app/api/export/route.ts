@@ -7,6 +7,20 @@ export const dynamic = "force-dynamic";
 
 const SIGNED_TTL_SECONDS = 60 * 60 * 24 * 7;
 
+const PAGE = 500;
+
+async function readAll<T>(
+  page: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { message: string } | null }>,
+): Promise<{ data: T[]; error: { message: string } | null }> {
+  const rows: T[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await page(from, from + PAGE - 1);
+    if (error || !data) return { data: rows, error: error ?? { message: "нет данных" } };
+    rows.push(...data);
+    if (data.length < PAGE) return { data: rows, error: null };
+  }
+}
+
 /**
  * Full archive as one JSON file: every release, track and post with its metadata, the
  * permanent app link of each media file and a direct download link valid for 7 days.
@@ -18,14 +32,26 @@ export async function GET(request: Request) {
   } = await supabase.auth.getUser();
   if (!user) return NextResponse.json({ error: "Нужно войти." }, { status: 401 });
 
+  // PostgREST caps every response (1000 rows by default), so each table is read page by page.
   const [releases, tracks, posts] = await Promise.all([
-    supabase.from("releases").select(RELEASE_COLUMNS).order("release_date", { ascending: true, nullsFirst: false }),
-    supabase.from("tracks").select(TRACK_COLUMNS).order("track_number", { ascending: true }),
-    supabase.from("posts").select(POST_COLUMNS).order("created_at", { ascending: true }),
+    readAll((from, to) =>
+      supabase
+        .from("releases")
+        .select(RELEASE_COLUMNS)
+        .order("release_date", { ascending: true, nullsFirst: false })
+        .order("id")
+        .range(from, to),
+    ),
+    readAll((from, to) =>
+      supabase.from("tracks").select(TRACK_COLUMNS).order("track_number", { ascending: true }).order("id").range(from, to),
+    ),
+    readAll((from, to) =>
+      supabase.from("posts").select(POST_COLUMNS).order("created_at", { ascending: true }).order("id").range(from, to),
+    ),
   ]);
   const failed = releases.error ?? tracks.error ?? posts.error;
-  if (failed || !releases.data || !tracks.data || !posts.data) {
-    return NextResponse.json({ error: `Не удалось прочитать архив: ${failed?.message ?? "нет данных"}` }, { status: 500 });
+  if (failed) {
+    return NextResponse.json({ error: `Не удалось прочитать архив: ${failed.message}` }, { status: 500 });
   }
 
   // Sign every file in batches, bucket by bucket.
