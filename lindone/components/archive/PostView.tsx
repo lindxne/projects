@@ -56,6 +56,14 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
     };
   }, [post.track_id, post.release_id]);
 
+  const cancel = () => {
+    setCaption(post.caption ?? "");
+    setTags(post.tags);
+    setLink({ releaseId: post.release_id, trackId: post.track_id });
+    setError(null);
+    setMode("view");
+  };
+
   const save = async () => {
     setBusy(true);
     setError(null);
@@ -183,7 +191,7 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
               <GlassButton variant="primary" disabled={busy} onClick={() => void save()}>
                 {busy ? "Сохраняю…" : "Сохранить"}
               </GlassButton>
-              <GlassButton variant="ghost" disabled={busy} onClick={() => setMode("view")}>
+              <GlassButton variant="ghost" disabled={busy} onClick={cancel}>
                 Отмена
               </GlassButton>
             </>
@@ -192,7 +200,7 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
               <GlassButton variant="danger" disabled={busy} onClick={() => void remove()}>
                 {busy ? "Удаляю…" : "Удалить навсегда"}
               </GlassButton>
-              <GlassButton variant="ghost" disabled={busy} onClick={() => setMode("view")}>
+              <GlassButton variant="ghost" disabled={busy} onClick={cancel}>
                 Оставить
               </GlassButton>
             </>
