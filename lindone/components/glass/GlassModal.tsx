@@ -89,8 +89,9 @@ export function GlassModal({
           )}
         >
           <motion.div
-            className="absolute inset-0 bg-black/55"
-            style={{ backdropFilter: "blur(3px)", WebkitBackdropFilter: "blur(3px)" }}
+            // Plain dimming: a full-screen backdrop-filter under the glass panel's own one
+            // makes Chrome mirror the page at the edges, and costs a lot on phones.
+            className="absolute inset-0 bg-black/65"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}

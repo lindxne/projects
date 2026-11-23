@@ -11,6 +11,8 @@ import type { Post } from "@/lib/supabase/types";
  */
 export function LazyVideo({ post }: { post: Post }) {
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [visible, setVisible] = useState(false);
+  // Once seen, the source stays attached so scrolling back resumes instantly.
   const [active, setActive] = useState(false);
   const [muted, setMuted] = useState(true);
   const [failed, setFailed] = useState(false);
@@ -21,18 +23,23 @@ export function LazyVideo({ post }: { post: Post }) {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (!entry) return;
-        if (entry.isIntersecting && entry.intersectionRatio >= 0.6) {
-          setActive(true);
-          void video.play().catch(() => undefined);
-        } else {
-          video.pause();
-        }
+        const onScreen = entry.isIntersecting && entry.intersectionRatio >= 0.6;
+        setVisible(onScreen);
+        if (onScreen) setActive(true);
       },
       { threshold: [0, 0.6] },
     );
     observer.observe(video);
     return () => observer.disconnect();
   }, []);
+
+  // Runs after the render that attached `src`, so play() has something to play.
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video || !active) return;
+    if (visible) void video.play().catch(() => undefined);
+    else video.pause();
+  }, [visible, active]);
 
   const toggleSound = () => {
     const next = !muted;

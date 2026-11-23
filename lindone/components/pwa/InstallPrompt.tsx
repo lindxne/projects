@@ -80,7 +80,7 @@ export function InstallPrompt() {
         >
           <p className="min-w-0 flex-1 text-sm text-mist">
             {installEvent ? (
-              "Поставь Lindone на главный экран — откроется как приложение."
+              "Lindone можно установить как приложение."
             ) : (
               <>
                 Чтобы установить: «Поделиться» → <strong>«На экран Домой»</strong>.

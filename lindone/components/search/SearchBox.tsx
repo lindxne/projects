@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from "react";
 import { GlassCard } from "@/components/glass/GlassCard";
 import { SearchIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/client";
-import type { SearchResult } from "@/lib/supabase/types";
+import { RELEASE_TYPE_LABEL, isReleaseType, type SearchResult } from "@/lib/supabase/types";
 import { describeDbError } from "@/lib/utils/errors";
+import { formatDate } from "@/lib/utils/format";
 
 const KIND_LABEL: Record<string, string> = { release: "Релизы", track: "Треки", post: "Архив" };
 const KIND_ORDER = ["release", "track", "post"];
@@ -14,6 +15,17 @@ const KIND_ORDER = ["release", "track", "post"];
 function hrefFor(result: SearchResult): string {
   if (result.kind === "post") return `/archive/${result.id}`;
   return `/releases/${result.kind === "track" ? (result.release_id ?? result.id) : result.id}`;
+}
+
+function subtitleFor(result: SearchResult): string {
+  if (result.kind === "release") {
+    const type = isReleaseType(result.subtitle) ? RELEASE_TYPE_LABEL[result.subtitle] : "Релиз";
+    return result.happened_at ? `${type} · ${new Date(result.happened_at).getFullYear()}` : type;
+  }
+  if (result.kind === "post") {
+    return `${result.subtitle === "video" ? "Видео" : "Фото"} · ${formatDate(result.happened_at)}`;
+  }
+  return result.subtitle ?? "";
 }
 
 /** Search over release titles, track titles and post captions (one RPC, debounced). */
@@ -105,7 +117,7 @@ export function SearchBox({ initialQuery }: { initialQuery: string }) {
                         <img src={result.image_url} alt="" width={52} height={52} loading="lazy" className="h-[52px] w-[52px] flex-none rounded-xl object-cover" />
                         <span className="min-w-0 flex-1">
                           <span className="block truncate font-semibold text-white">{result.title || "Без подписи"}</span>
-                          <span className="block truncate text-sm text-mist-muted">{result.subtitle}</span>
+                          <span className="block truncate text-sm text-mist-muted">{subtitleFor(result)}</span>
                         </span>
                       </Link>
                     </li>
