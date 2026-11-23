@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { GlassSphere } from "@/components/glass/GlassSphere";
 import { ChevronDownIcon, QueueIcon } from "@/components/ui/icons";
 import { useCurrentTrack, usePlayer } from "@/lib/audio/player-store";
+import { lockScroll } from "@/lib/utils/scroll-lock";
 import { CoverArt } from "./CoverArt";
 import {
   MuteButton,
@@ -29,15 +30,14 @@ export function PlayerExpanded() {
 
   useEffect(() => {
     if (!open) return;
-    const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
+    const unlock = lockScroll();
     panelRef.current?.focus();
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape" && !usePlayer.getState().queueOpen) setExpanded(false);
     };
     document.addEventListener("keydown", onKeyDown);
     return () => {
-      document.body.style.overflow = overflow;
+      unlock();
       document.removeEventListener("keydown", onKeyDown);
     };
   }, [open, setExpanded]);

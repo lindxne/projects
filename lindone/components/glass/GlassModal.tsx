@@ -5,6 +5,7 @@ import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { CloseIcon } from "@/components/ui/icons";
 import { cx } from "@/lib/utils/format";
+import { lockScroll } from "@/lib/utils/scroll-lock";
 import { GlassLens } from "./GlassLens";
 
 interface GlassModalProps {
@@ -40,8 +41,7 @@ export function GlassModal({
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    const { overflow } = document.body.style;
-    document.body.style.overflow = "hidden";
+    const unlock = lockScroll();
     const focusTimer = window.setTimeout(() => panelRef.current?.focus(), 30);
 
     const onKeyDown = (event: KeyboardEvent) => {
@@ -70,7 +70,7 @@ export function GlassModal({
     return () => {
       window.clearTimeout(focusTimer);
       document.removeEventListener("keydown", onKeyDown, true);
-      document.body.style.overflow = overflow;
+      unlock();
       previous?.focus();
     };
   }, [open, onClose]);

@@ -52,6 +52,8 @@ interface PlayerState {
   reorderQueue: (ids: string[]) => void;
   clearQueue: () => void;
   forgetTracks: (ids: string[]) => void;
+  /** Keeps queued tracks in sync after their release was edited. */
+  updateRelease: (releaseId: string, patch: Pick<PlayerTrack, "coverUrl" | "releaseTitle">) => void;
   setQueueOpen: (open: boolean) => void;
   setExpanded: (open: boolean) => void;
 }
@@ -341,11 +343,19 @@ export const usePlayer = create<PlayerState>()(
             history: [],
             error: null,
             expanded: false,
+            queueOpen: false,
           });
         },
 
         forgetTracks: (ids) => {
           for (const id of ids) get().removeFromQueue(id);
+        },
+
+        updateRelease: (releaseId, patch) => {
+          const { queue } = get();
+          if (queue.some((track) => track.releaseId === releaseId)) {
+            set({ queue: queue.map((track) => (track.releaseId === releaseId ? { ...track, ...patch } : track)) });
+          }
         },
 
         setQueueOpen: (queueOpen) => set({ queueOpen }),
