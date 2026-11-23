@@ -88,6 +88,7 @@ export async function uploadFile({
   onProgress,
   signal,
 }: UploadOptions): Promise<string> {
+  if (signal?.aborted) throw new UploadError("Загрузка отменена.", "network");
   const supabase = createClient();
   const {
     data: { session },
@@ -127,6 +128,10 @@ export async function uploadFile({
       reject(new UploadError("Загрузка заняла слишком много времени. Повтори попытку.", "network"));
     xhr.onabort = () => reject(new UploadError("Загрузка отменена.", "network"));
 
+    if (signal?.aborted) {
+      reject(new UploadError("Загрузка отменена.", "network"));
+      return;
+    }
     signal?.addEventListener("abort", () => xhr.abort(), { once: true });
     xhr.send(file);
   });

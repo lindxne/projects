@@ -8,7 +8,7 @@ import { CloseIcon, UploadIcon, VideoIcon } from "@/components/ui/icons";
 import { UploadProgress } from "@/components/ui/UploadProgress";
 import { resizeToMax } from "@/lib/image/resize";
 import { createClient } from "@/lib/supabase/client";
-import { MAX_UPLOAD_MB, assertUploadSize, removeMedia, uploadFile } from "@/lib/supabase/storage";
+import { MAX_UPLOAD_MB, UploadError, assertUploadSize, removeMedia, uploadFile } from "@/lib/supabase/storage";
 import type { PostInsert, PostTag } from "@/lib/supabase/types";
 import { SaveError, describeDbError, describeError } from "@/lib/utils/errors";
 import { cx, pluralRu } from "@/lib/utils/format";
@@ -156,6 +156,7 @@ export function UploadForm() {
         row.duration_sec = Math.max(1, Math.round(video.duration));
       }
 
+      if (signal.aborted) throw new UploadError("Загрузка отменена.", "network");
       setProgress({ label: `${prefix}: сохраняю…`, fraction: null });
       const { error: insertError } = await createClient().from("posts").insert(row);
       if (insertError) throw new SaveError(describeDbError(insertError));
