@@ -58,6 +58,14 @@ export function InstallPrompt() {
 
   const visible = installEvent !== null || iosHint;
 
+  // Reserve room at the end of the page so the hint never covers the last controls.
+  useEffect(() => {
+    document.documentElement.style.setProperty("--install-height", visible ? "84px" : "0px");
+    return () => {
+      document.documentElement.style.setProperty("--install-height", "0px");
+    };
+  }, [visible]);
+
   return (
     <AnimatePresence>
       {visible ? (

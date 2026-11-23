@@ -1,9 +1,10 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
-let firstPaint = true;
+/** Set in an effect, so it is only ever true in the browser after the first page has mounted. */
+let hasMounted = false;
 
 /**
  * Page transition: a sheet of glass sweeps up off the new page while its content settles.
@@ -11,8 +12,12 @@ let firstPaint = true;
  */
 export default function Template({ children }: { children: ReactNode }) {
   const reduced = useReducedMotion();
-  const animate = !firstPaint && !reduced;
-  firstPaint = false;
+  const [navigated] = useState(() => hasMounted);
+  const animate = navigated && !reduced;
+
+  useEffect(() => {
+    hasMounted = true;
+  }, []);
 
   if (!animate) return <>{children}</>;
 

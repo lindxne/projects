@@ -226,7 +226,7 @@
 
 @layer utilities {
   .pb-player {
-    padding-bottom: calc(var(--player-height) + var(--safe-bottom) + 2.5rem);
+    padding-bottom: calc(var(--player-height) + var(--safe-bottom) + var(--install-height, 0px) + 2.5rem);
   }
 
   .no-scrollbar {
