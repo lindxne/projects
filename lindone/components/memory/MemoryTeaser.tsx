@@ -1,29 +1,10 @@
-"use client";
-
 import Link from "next/link";
-import { useEffect, useState } from "react";
 import { ClockIcon } from "@/components/ui/icons";
-import { createClient } from "@/lib/supabase/client";
 import type { MemoryItem } from "@/lib/supabase/types";
 import { pluralRu } from "@/lib/utils/format";
 
 /** "On this day N years ago" banner on the home page. Hidden when there is nothing to recall. */
-export function MemoryTeaser() {
-  const [items, setItems] = useState<MemoryItem[]>([]);
-
-  useEffect(() => {
-    let cancelled = false;
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone || "UTC";
-    void createClient()
-      .rpc("on_this_day", { tz })
-      .then(({ data }) => {
-        if (!cancelled && data) setItems(data);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, []);
-
+export function MemoryTeaser({ items }: { items: MemoryItem[] }) {
   const first = items[0];
   if (!first) return null;
   const years = [...new Set(items.map((item) => item.years_ago))].sort((a, b) => a - b);

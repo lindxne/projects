@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { GlassNav } from "@/components/glass/GlassNav";
 import { LightTracker } from "@/components/glass/LightTracker";
+import { TimezoneCookie } from "@/components/memory/TimezoneCookie";
 import { PlayerBar } from "@/components/player/PlayerBar";
 import { PlayerProvider } from "@/components/player/PlayerProvider";
 import { InstallPrompt } from "@/components/pwa/InstallPrompt";
@@ -28,6 +29,7 @@ export default function AppLayout({ children }: { children: ReactNode }) {
       <PlayerProvider />
       <PlayerBar />
       <InstallPrompt />
+      <TimezoneCookie />
     </>
   );
 }

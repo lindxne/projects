@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import Link from "next/link";
 import { GlassLink } from "@/components/glass/GlassButton";
 import { MemoryTeaser } from "@/components/memory/MemoryTeaser";
 import { ReleaseGrid } from "@/components/releases/ReleaseGrid";
 import { PlusIcon } from "@/components/ui/icons";
 import { listReleases } from "@/lib/data/queries";
+import { createClient } from "@/lib/supabase/server";
 import { RELEASE_TYPES, RELEASE_TYPE_LABEL_PLURAL, isReleaseType } from "@/lib/supabase/types";
 import { pluralRu } from "@/lib/utils/format";
+import { TIMEZONE_COOKIE, safeTimezone } from "@/lib/utils/timezone";
 
 export const metadata: Metadata = { title: "Дискография" };
 
@@ -18,7 +21,13 @@ export default async function Home({ searchParams }: HomeProps) {
   const params = await searchParams;
   const type = isReleaseType(params.type) ? params.type : undefined;
   const ascending = params.sort === "asc";
-  const releases = await listReleases({ type, ascending });
+  const tz = safeTimezone((await cookies()).get(TIMEZONE_COOKIE)?.value);
+  const supabase = await createClient();
+  // The memory banner is a bonus: if it fails, the discography still renders.
+  const [releases, memories] = await Promise.all([
+    listReleases({ type, ascending }),
+    supabase.rpc("on_this_day", { tz }).then(({ data }) => data ?? []),
+  ]);
 
   const href = (next: { type?: string; sort?: string }) => {
     const query = new URLSearchParams();
@@ -32,7 +41,7 @@ export default async function Home({ searchParams }: HomeProps) {
 
   return (
     <div className="grid gap-5 md:gap-7">
-      <MemoryTeaser />
+      <MemoryTeaser items={memories} />
 
       <header className="flex flex-wrap items-end justify-between gap-3">
         <div>

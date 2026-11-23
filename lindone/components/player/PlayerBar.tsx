@@ -59,7 +59,7 @@ export function PlayerBar() {
                 type="button"
                 onClick={() => track && setExpanded(true)}
                 disabled={!track}
-                aria-label={track ? `Открыть плеер: ${track.title}` : "Плеер пуст"}
+                aria-label={track ? `${title} ${subtitle} — открыть плеер` : "Плеер пуст"}
                 className="flex min-w-0 flex-1 items-center gap-3 rounded-2xl text-left"
               >
                 <CoverArt src={track?.coverUrl ?? null} alt="" className="w-12 flex-none rounded-2xl" depth={5} sizes={96} />

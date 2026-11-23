@@ -20,7 +20,7 @@ export function ReleaseCard({ release, priority = false }: { release: Release; p
         sizes={500}
       />
       <div className="px-1.5 pb-1 pt-2.5">
-        <h3 className="truncate text-[15px] font-semibold text-white md:text-base">{release.title}</h3>
+        <h2 className="truncate text-[15px] font-semibold text-white md:text-base">{release.title}</h2>
         <p className="mt-0.5 truncate text-xs text-mist-muted md:text-sm">
           {RELEASE_TYPE_LABEL[release.type]}
           {year ? ` · ${year}` : ""}
