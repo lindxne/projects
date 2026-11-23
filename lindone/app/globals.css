@@ -1,0 +1,316 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: dark;
+  /* Light source for specular highlights: the cursor (desktop) or scroll position (touch). */
+  --mx: 50vw;
+  --my: 20vh;
+  --scroll: 0;
+  --player-height: 84px;
+  --nav-height: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+}
+
+@layer base {
+  html {
+    background: #07060d;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply min-h-dvh bg-ink font-sans text-mist antialiased;
+    overscroll-behavior-y: none;
+  }
+
+  ::selection {
+    background: rgba(122, 69, 255, 0.55);
+    color: #fff;
+  }
+
+  :focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+    border-radius: 10px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+}
+
+@layer components {
+  /* -----------------------------------------------------------------------
+     Liquid glass (CSS layer). Used on UI surfaces only — never on media/text.
+     - backdrop-filter: mild blur + saturation + darkening (clarity with
+       distortion, and a guaranteed dark base under text),
+     - inner shadows for thickness,
+     - ::before: 1px rim with chromatic aberration (red/cyan split),
+     - ::after: specular highlight that follows the global light (--mx/--my).
+     --------------------------------------------------------------------- */
+  .glass {
+    --glass-blur: 12px;
+    --glass-tint: rgba(13, 11, 26, 0.5);
+    --glass-radius: 28px;
+    position: relative;
+    isolation: isolate;
+    border-radius: var(--glass-radius);
+    background:
+      linear-gradient(
+        135deg,
+        rgba(255, 255, 255, 0.16) 0%,
+        rgba(255, 255, 255, 0.03) 38%,
+        rgba(255, 255, 255, 0.02) 62%,
+        rgba(255, 255, 255, 0.1) 100%
+      ),
+      var(--glass-tint);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(165%) brightness(0.78);
+    backdrop-filter: blur(var(--glass-blur)) saturate(165%) brightness(0.78);
+    box-shadow:
+      inset 0 1px 0 0 rgba(255, 255, 255, 0.42),
+      inset 0 -1px 0 0 rgba(255, 255, 255, 0.1),
+      inset 1.5px 0 0 -0.5px rgba(255, 70, 110, 0.28),
+      inset -1.5px 0 0 -0.5px rgba(70, 205, 255, 0.28),
+      inset 0 0 28px rgba(255, 255, 255, 0.05),
+      inset 0 -22px 34px -22px rgba(0, 0, 0, 0.5),
+      0 24px 60px -24px rgba(0, 0, 0, 0.75),
+      0 2px 6px rgba(0, 0, 0, 0.25);
+  }
+
+  .glass::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    padding: 1px;
+    border-radius: inherit;
+    background: conic-gradient(
+      from calc(200deg + var(--scroll) * 90deg),
+      rgba(255, 90, 130, 0.75),
+      rgba(255, 255, 255, 0.7) 18%,
+      rgba(90, 210, 255, 0.75) 36%,
+      rgba(255, 255, 255, 0.1) 55%,
+      rgba(160, 120, 255, 0.55) 78%,
+      rgba(255, 90, 130, 0.75)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box exclude,
+      linear-gradient(#000 0 0);
+    pointer-events: none;
+  }
+
+  .glass::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(
+        480px circle at var(--mx) var(--my),
+        rgba(255, 255, 255, 0.17),
+        rgba(255, 255, 255, 0.05) 32%,
+        transparent 62%
+      )
+      fixed;
+    mix-blend-mode: screen;
+    pointer-events: none;
+  }
+
+  /* Cards in grids/feeds: lighter blur, no fixed-attachment highlight (cheap on phones). */
+  .glass-card {
+    --glass-blur: 8px;
+    --glass-radius: 24px;
+    --glass-tint: rgba(13, 11, 26, 0.46);
+  }
+
+  .glass-strong {
+    --glass-blur: 18px;
+    --glass-tint: rgba(11, 9, 22, 0.6);
+  }
+
+  .glass-pill {
+    --glass-radius: 999px;
+  }
+
+  /* Solid readable base for text placed over arbitrary content. */
+  .scrim {
+    background: rgba(8, 7, 16, 0.72);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  .glass-input {
+    @apply w-full rounded-2xl border border-white/15 bg-black/35 px-4 py-3 text-mist placeholder:text-mist-faint;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.08),
+      inset 0 -12px 20px -14px rgba(0, 0, 0, 0.6);
+    transition:
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .glass-input:focus {
+    @apply border-white/60 bg-black/45;
+    outline: none;
+  }
+
+  .glass-input:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-mist-muted;
+  }
+
+  /* Sphere button: a glass ball with its own highlight and caustic. */
+  .glass-sphere {
+    position: relative;
+    isolation: isolate;
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    border-radius: 999px;
+    color: #fff;
+    background:
+      radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.75) 0%, rgba(255, 255, 255, 0.16) 22%, transparent 46%),
+      radial-gradient(circle at 68% 84%, rgba(120, 200, 255, 0.4) 0%, transparent 46%),
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.1) 0%, rgba(20, 16, 40, 0.62) 78%);
+    -webkit-backdrop-filter: blur(6px) saturate(180%);
+    backdrop-filter: blur(6px) saturate(180%);
+    box-shadow:
+      inset 0 1px 1px rgba(255, 255, 255, 0.7),
+      inset 0 -6px 12px rgba(0, 0, 0, 0.45),
+      inset 2px 0 2px -1px rgba(255, 80, 120, 0.4),
+      inset -2px 0 2px -1px rgba(80, 210, 255, 0.4),
+      0 8px 20px -8px rgba(0, 0, 0, 0.8);
+  }
+
+  .glass-sphere[data-active="true"] {
+    background:
+      radial-gradient(circle at 32% 24%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.5) 26%, transparent 52%),
+      radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.92) 0%, rgba(214, 205, 255, 0.92) 100%);
+    color: #0b0a14;
+  }
+
+  .glass-sphere:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .chip {
+    @apply inline-flex min-h-[36px] items-center gap-1.5 rounded-full border border-white/15 bg-black/30 px-3.5 text-sm font-medium text-mist-muted transition-colors;
+  }
+
+  .chip[aria-pressed="true"],
+  .chip[aria-current="true"],
+  .chip[data-active="true"] {
+    @apply border-white/80 bg-white text-ink;
+  }
+}
+
+@layer utilities {
+  .pb-player {
+    padding-bottom: calc(var(--player-height) + var(--safe-bottom) + 2.5rem);
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* CSS background: always present under the WebGL canvas, and the fallback without WebGL. */
+.bg-fallback {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(60% 50% at 18% 12%, rgba(122, 69, 255, 0.55), transparent 70%),
+    radial-gradient(50% 45% at 86% 22%, rgba(240, 64, 154, 0.42), transparent 70%),
+    radial-gradient(55% 50% at 70% 88%, rgba(58, 120, 255, 0.45), transparent 70%),
+    radial-gradient(45% 40% at 12% 82%, rgba(25, 185, 201, 0.34), transparent 70%),
+    #07060d;
+}
+
+.bg-fallback::before,
+.bg-fallback::after {
+  content: "";
+  position: absolute;
+  width: 60vmax;
+  height: 60vmax;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.55;
+  will-change: transform;
+}
+
+.bg-fallback::before {
+  top: -20vmax;
+  left: -10vmax;
+  background: radial-gradient(circle, rgba(240, 64, 154, 0.8), transparent 65%);
+  animation: drift 26s ease-in-out infinite;
+}
+
+.bg-fallback::after {
+  right: -20vmax;
+  bottom: -25vmax;
+  background: radial-gradient(circle, rgba(58, 120, 255, 0.8), transparent 65%);
+  animation: drift 34s ease-in-out infinite reverse;
+}
+
+@keyframes drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(6%, -8%, 0) scale(1.14);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* background-attachment: fixed is unreliable on touch browsers: use a static highlight. */
+@media (hover: none) {
+  .glass::after {
+    background: radial-gradient(
+      120% 90% at calc(20% + var(--scroll) * 60%) -10%,
+      rgba(255, 255, 255, 0.16),
+      rgba(255, 255, 255, 0.04) 40%,
+      transparent 68%
+    );
+  }
+}
