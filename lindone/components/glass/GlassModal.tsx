@@ -116,7 +116,7 @@ export function GlassModal({
             )}
           >
             <GlassLens tier="desktop" radius={28} />
-            <div className={cx("relative flex items-center justify-between gap-4 px-5 pt-4", hideTitle ? "sr-only" : "pb-2")}>
+            <div className={hideTitle ? "sr-only" : "relative flex items-center justify-between gap-4 px-5 pb-2 pt-4"}>
               <h2 id={titleId} className="text-lg font-bold text-white">
                 {title}
               </h2>
