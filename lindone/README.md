@@ -72,7 +72,7 @@ npm run dev
    - Site URL: `https://lindone.com`
    - Redirect URLs: `https://lindone.com/**`. Для превью добавляй только адреса своего проекта, например `https://lindone-*-<твоя-команда>.vercel.app/**`. Общий шаблон `https://*.vercel.app/**` не используй: он разрешит вход через чужие деплои.
 5. Authentication → Sign In / Providers → Email: оставь **Confirm email** включённым — иначе аккаунт с адресом владельца можно создать по паролю, не имея доступа к почте.
-6. Authentication → Emails → шаблоны **Magic Link** и **Confirm signup** (он уходит при самом первом входе): вставь в оба содержимое `supabase/templates/magic_link.html`. В нём есть и ссылка (`{{ .TokenHash }}`), и код (`{{ .Token }}`) — код нужен, чтобы войти в установленное на iPhone приложение.
+6. Authentication → Emails → шаблоны **Magic Link** и **Confirm signup** (он уходит при самом первом входе): вставь в оба содержимое `supabase/templates/magic_link.html`. В нём есть и ссылка (`{{ .TokenHash }}`), и код (`{{ .Token }}`) — код нужен, чтобы войти в установленное на iPhone приложение. На бесплатном тарифе Supabase шаблоны можно менять только после подключения своего SMTP (шаг 7); до этого письмо стандартное, без кода, и вход работает только по ссылке, открытой в том же браузере.
 7. Authentication → Emails → SMTP: подключи свой SMTP (Resend, Postmark и т. п.). Встроенная почта Supabase шлёт всего несколько писем в час.
 8. Storage → Settings: лимит размера файла. На бесплатном тарифе это 50 МБ; на Pro можно поднять и выставить то же число в `NEXT_PUBLIC_MAX_UPLOAD_MB`.
 
