@@ -1,56 +1,54 @@
 "use client";
 
 import { useEffect } from "react";
-import { light } from "@/lib/hooks/light";
 
-/** Feeds the cursor / scroll position into CSS variables and the shared light object. */
+/**
+ * Soft highlight that follows the cursor inside the hovered glass surface.
+ * Coordinates are local to that element, so the light sits exactly under the pointer.
+ */
 export function LightTracker() {
   useEffect(() => {
-    const root = document.documentElement;
+    if (!window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     let frame = 0;
-    let hasPointer = false;
+    let current: HTMLElement | null = null;
+    let x = 0;
+    let y = 0;
 
     const apply = () => {
       frame = 0;
-      root.style.setProperty("--mx", `${light.x.toFixed(1)}px`);
-      root.style.setProperty("--my", `${light.y.toFixed(1)}px`);
-      root.style.setProperty("--scroll", light.scroll.toFixed(4));
-    };
-    const schedule = () => {
-      if (frame === 0) frame = requestAnimationFrame(apply);
+      if (!current) return;
+      const rect = current.getBoundingClientRect();
+      current.style.setProperty("--lx", `${(x - rect.left).toFixed(1)}px`);
+      current.style.setProperty("--ly", `${(y - rect.top).toFixed(1)}px`);
     };
 
-    const readScroll = () => {
-      const range = root.scrollHeight - window.innerHeight;
-      light.scroll = range > 0 ? Math.min(Math.max(window.scrollY / range, 0), 1) : 0;
-      if (!hasPointer) {
-        // Touch: the highlight glides across the screen as the page scrolls.
-        light.x = window.innerWidth * (0.2 + 0.6 * (0.5 + 0.5 * Math.sin(window.scrollY / 260)));
-        light.y = window.innerHeight * (0.15 + 0.7 * light.scroll);
-      }
-      schedule();
+    const leave = () => {
+      current?.style.setProperty("--lo", "0");
+      current = null;
     };
 
     const onPointerMove = (event: PointerEvent) => {
-      if (event.pointerType === "touch") return;
-      hasPointer = true;
-      light.x = event.clientX;
-      light.y = event.clientY;
-      schedule();
+      if (event.pointerType !== "mouse") return;
+      const target = event.target instanceof Element ? event.target.closest<HTMLElement>(".glass") : null;
+      if (target !== current) {
+        leave();
+        current = target;
+        current?.style.setProperty("--lo", "1");
+      }
+      x = event.clientX;
+      y = event.clientY;
+      if (current && frame === 0) frame = requestAnimationFrame(apply);
     };
 
-    light.x = window.innerWidth * 0.5;
-    light.y = window.innerHeight * 0.2;
-    readScroll();
-
     window.addEventListener("pointermove", onPointerMove, { passive: true });
-    window.addEventListener("scroll", readScroll, { passive: true });
-    window.addEventListener("resize", readScroll, { passive: true });
+    document.addEventListener("pointerleave", leave);
     return () => {
       window.removeEventListener("pointermove", onPointerMove);
-      window.removeEventListener("scroll", readScroll);
-      window.removeEventListener("resize", readScroll);
+      document.removeEventListener("pointerleave", leave);
       if (frame !== 0) cancelAnimationFrame(frame);
+      leave();
     };
   }, []);
 

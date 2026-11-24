@@ -112,7 +112,7 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
         // eslint-disable-next-line @next/next/no-img-element -- private media behind a signed redirect
         <img
           src={post.media_url}
-          alt={post.caption ?? "Фото из архива"}
+          alt={post.caption ?? "Photo"}
           width={post.width ?? undefined}
           height={post.height ?? undefined}
           className="block h-auto max-h-[70dvh] w-full bg-black object-contain"
@@ -124,7 +124,7 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
           <>
             <div>
               <label htmlFor="post-caption" className="field-label">
-                Подпись
+                Caption
               </label>
               <textarea
                 id="post-caption"
@@ -145,12 +145,10 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
             </p>
             {post.caption ? <p className="whitespace-pre-line break-words text-[15px] leading-relaxed text-mist">{post.caption}</p> : null}
             {post.tags.length > 0 ? (
-              <ul className="flex flex-wrap gap-2" aria-label="Теги">
+              <ul className="flex flex-wrap gap-2" aria-label="Tags">
                 {post.tags.map((tag) => (
                   <li key={tag}>
-                    <Link href={`/archive?tag=${tag}`} className="chip !min-h-[32px] !px-3 text-xs">
-                      #{POST_TAG_LABEL[tag]}
-                    </Link>
+                    <span className="chip !min-h-[32px] !px-3 text-xs">#{POST_TAG_LABEL[tag]}</span>
                   </li>
                 ))}
               </ul>
@@ -158,7 +156,7 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
             {linked ? (
               <Link
                 href={`/releases/${linked.releaseId}`}
-                className="flex min-h-[48px] items-center gap-3 rounded-2xl border border-white/15 bg-black/30 px-3.5 text-sm text-white hover:bg-white/10"
+                className="flex min-h-[48px] items-center gap-3 rounded-2xl border border-black/15 bg-black/30 px-3.5 text-sm text-mist hover:bg-black/10"
               >
                 <DiscIcon size={18} className="flex-none text-mist-muted" />
                 <span className="min-w-0 truncate">
@@ -171,7 +169,7 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
         )}
 
         {error ? (
-          <p role="alert" className="rounded-2xl border border-rose-300/40 bg-rose-950/60 px-4 py-3 text-sm text-rose-100">
+          <p role="alert" className="rounded-2xl border border-rose-300/40 bg-rose-950/60 px-4 py-3 text-sm text-rose-600">
             {error}
           </p>
         ) : null}
@@ -180,28 +178,28 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
           {mode === "view" ? (
             <>
               <GlassButton variant="ghost" className="!min-h-[40px] !px-4" onClick={() => setMode("edit")}>
-                <EditIcon size={15} /> Изменить
+                <EditIcon size={15} /> Edit
               </GlassButton>
               <GlassButton variant="ghost" className="!min-h-[40px] !px-4" onClick={() => setMode("delete")}>
-                <TrashIcon size={15} /> Удалить
+                <TrashIcon size={15} /> Delete
               </GlassButton>
             </>
           ) : mode === "edit" ? (
             <>
               <GlassButton variant="primary" disabled={busy} onClick={() => void save()}>
-                {busy ? "Сохраняю…" : "Сохранить"}
+                {busy ? "Saving…" : "Save"}
               </GlassButton>
               <GlassButton variant="ghost" disabled={busy} onClick={cancel}>
-                Отмена
+                Cancel
               </GlassButton>
             </>
           ) : (
             <>
               <GlassButton variant="danger" disabled={busy} onClick={() => void remove()}>
-                {busy ? "Удаляю…" : "Удалить навсегда"}
+                {busy ? "Deleting…" : "Delete forever"}
               </GlassButton>
               <GlassButton variant="ghost" disabled={busy} onClick={cancel}>
-                Оставить
+                Keep
               </GlassButton>
             </>
           )}

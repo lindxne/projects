@@ -48,7 +48,7 @@ export function LinkPicker({ value, onChange, disabled }: LinkPickerProps) {
     <div className="grid gap-3 sm:grid-cols-2">
       <div>
         <label htmlFor="link-release" className="field-label">
-          Релиз <span className="text-mist-faint">· необязательно</span>
+          Release <span className="text-mist-faint">· optional</span>
         </label>
         <select
           id="link-release"
@@ -57,7 +57,7 @@ export function LinkPicker({ value, onChange, disabled }: LinkPickerProps) {
           onChange={(event) => onChange({ releaseId: event.target.value || null, trackId: null })}
           disabled={disabled || options.length === 0}
         >
-          <option value="">{failed ? "Не удалось загрузить релизы" : options.length === 0 ? "Релизов пока нет" : "Без привязки"}</option>
+          <option value="">{failed ? "Could not load releases" : options.length === 0 ? "No releases yet" : "Not linked"}</option>
           {options.map((option) => (
             <option key={option.id} value={option.id}>
               {option.title}
@@ -67,7 +67,7 @@ export function LinkPicker({ value, onChange, disabled }: LinkPickerProps) {
       </div>
       <div>
         <label htmlFor="link-track" className="field-label">
-          Трек <span className="text-mist-faint">· необязательно</span>
+          Track <span className="text-mist-faint">· optional</span>
         </label>
         <select
           id="link-track"
@@ -76,7 +76,7 @@ export function LinkPicker({ value, onChange, disabled }: LinkPickerProps) {
           onChange={(event) => onChange({ releaseId: value.releaseId, trackId: event.target.value || null })}
           disabled={disabled || !release || release.tracks.length === 0}
         >
-          <option value="">{release ? "Весь релиз" : "Сначала выбери релиз"}</option>
+          <option value="">{release ? "Whole release" : "Pick a release first"}</option>
           {release?.tracks.map((track) => (
             <option key={track.id} value={track.id}>
               {track.title}

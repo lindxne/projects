@@ -59,19 +59,19 @@ export function LazyVideo({ post }: { post: Post }) {
         playsInline
         preload="none"
         onError={() => active && setFailed(true)}
-        aria-label={post.caption ? `Видео: ${post.caption.slice(0, 80)}` : "Видео"}
+        aria-label={post.caption ? `Video: ${post.caption.slice(0, 80)}` : "Video"}
         className="block h-auto max-h-[80dvh] w-full bg-black object-contain"
         style={{ aspectRatio: post.width && post.height ? `${post.width} / ${post.height}` : "9 / 16" }}
       />
       {failed ? (
-        <p role="alert" className="scrim absolute inset-x-3 bottom-3 rounded-2xl px-3 py-2 text-sm text-rose-100">
-          Видео не загрузилось. Проверь соединение и обнови страницу.
+        <p role="alert" className="scrim absolute inset-x-3 bottom-3 rounded-2xl px-3 py-2 text-sm text-rose-600">
+          The video did not load. Check your connection and refresh.
         </p>
       ) : (
         <button
           type="button"
           onClick={toggleSound}
-          aria-label={muted ? "Включить звук видео" : "Выключить звук видео"}
+          aria-label={muted ? "Unmute video" : "Mute video"}
           aria-pressed={!muted}
           className="scrim absolute bottom-2.5 right-2.5 grid h-11 w-11 place-items-center rounded-full text-white"
         >

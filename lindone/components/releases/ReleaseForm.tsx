@@ -114,7 +114,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
     if (!file) return;
     setCoverError(null);
     if (!file.type.startsWith("image/") && !/\.(jpe?g|png|webp|heic|heif|avif)$/i.test(file.name)) {
-      setCoverError("Это не изображение. Нужен JPEG, PNG или WebP.");
+      setCoverError("That is not an image. Use JPEG, PNG or WebP.");
       return;
     }
     setCoverBusy(true);
@@ -142,11 +142,11 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
     for (const file of Array.from(files)) {
       const contentType = audioContentType(file);
       if (!contentType) {
-        rejected.push(`«${file.name}» — формат не поддерживается (нужен MP3, M4A, WAV, FLAC или OGG)`);
+        rejected.push(`“${file.name}” — unsupported format (use MP3, M4A, WAV, FLAC or OGG)`);
         continue;
       }
       if (file.size > MAX_UPLOAD_MB * 1024 * 1024) {
-        rejected.push(`«${file.name}» — ${(file.size / 1024 / 1024).toFixed(1)} МБ, лимит ${MAX_UPLOAD_MB} МБ`);
+        rejected.push(`“${file.name}” — ${(file.size / 1024 / 1024).toFixed(1)} MB, limit ${MAX_UPLOAD_MB} MB`);
         continue;
       }
       added.push({
@@ -160,7 +160,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
         reading: true,
       });
     }
-    if (rejected.length > 0) setError(`Не добавлено: ${rejected.join("; ")}.`);
+    if (rejected.length > 0) setError(`Not added: ${rejected.join(";")}.`);
     if (added.length === 0) return;
     setDrafts((current) => [...current, ...added]);
     // A single track dropped into an empty form names the release.
@@ -173,7 +173,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
         .catch(() =>
           patchDraft(draft.key, {
             reading: false,
-            error: "Не удалось прочитать файл: он повреждён или браузер не знает этот кодек.",
+            error: "Could not read the file: it is corrupted or the browser does not know this codec.",
           }),
         );
     }
@@ -199,21 +199,21 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
   };
 
   const validate = (): { cleanLinks: ReleaseLinks } | string => {
-    if (!title.trim()) return "Укажи название релиза.";
-    if (!cover && !release?.cover_url) return "Добавь обложку — она обязательна.";
-    if (coverBusy) return "Обложка ещё обрабатывается — подожди секунду.";
+    if (!title.trim()) return "Enter a release title.";
+    if (!cover && !release?.cover_url) return "Add a cover — it is required.";
+    if (coverBusy) return "The cover is still processing — wait a second.";
     const cleanLinks: ReleaseLinks = {};
     for (const service of STREAMING_SERVICES) {
       const url = normalizeUrl(links[service]);
-      if (url === null) return `Ссылка ${STREAMING_LABEL[service]} не похожа на адрес сайта.`;
+      if (url === null) return `The ${STREAMING_LABEL[service]} link does not look like a URL.`;
       if (url) cleanLinks[service] = url;
     }
     for (const [index, draft] of drafts.entries()) {
-      if (!draft.title.trim()) return `Трек ${index + 1}: укажи название.`;
-      if (draft.reading) return `Трек ${index + 1}: ещё читаю длительность — подожди секунду.`;
-      if (draft.error) return `Трек ${index + 1}: ${draft.error} Удали его или выбери другой файл.`;
+      if (!draft.title.trim()) return `Track ${index + 1}: enter a title.`;
+      if (draft.reading) return `Track ${index + 1}: still reading the duration — wait a second.`;
+      if (draft.error) return `Track ${index + 1}: ${draft.error} Remove it or choose another file.`;
       if (draft.bpm && (Number(draft.bpm) < 20 || Number(draft.bpm) > 400)) {
-        return `Трек ${index + 1}: BPM должен быть от 20 до 400.`;
+        return `Track ${index + 1}: BPM must be between 20 and 400.`;
       }
     }
     return { cleanLinks };
@@ -242,13 +242,13 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
     try {
       let coverUrl = savedCover.current ?? "";
       if (cover) {
-        assertUploadSize(cover.blob, "Обложка", 5);
-        setProgress({ label: "Загружаю обложку…", fraction: 0 });
+        assertUploadSize(cover.blob, "Cover", 5);
+        setProgress({ label: "Uploading cover…", fraction: 0 });
         coverUrl = await uploadFile({
           bucket: "covers",
           file: cover.blob,
           contentType: cover.contentType,
-          onProgress: report("Загружаю обложку…", cover.blob.size),
+          onProgress: report("Uploading cover…", cover.blob.size),
         });
         uploaded.push(coverUrl);
         doneBytes += cover.blob.size;
@@ -257,9 +257,9 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
       const audioUrls = new Map<string, string>();
       for (const [index, draft] of newDrafts.entries()) {
         if (!draft.file || !draft.contentType) continue;
-        const label = `Загружаю трек ${index + 1} из ${newDrafts.length}: ${draft.title}`;
+        const label = `Uploading track ${index + 1} of ${newDrafts.length}: ${draft.title}`;
         setProgress({ label, fraction: totalBytes > 0 ? doneBytes / totalBytes : null });
-        assertUploadSize(draft.file, `Трек «${draft.title}»`);
+        assertUploadSize(draft.file, `Track “${draft.title}”`);
         const url = await uploadFile({
           bucket: "audio",
           file: draft.file,
@@ -272,7 +272,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
         doneBytes += draft.file.size;
       }
 
-      setProgress({ label: "Сохраняю…", fraction: null });
+      setProgress({ label: "Saving…", fraction: null });
       const fields = {
         type,
         title: title.trim(),
@@ -378,7 +378,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
     <form onSubmit={onSubmit} noValidate className="mx-auto grid max-w-4xl gap-4 md:grid-cols-[300px_minmax(0,1fr)] md:gap-5">
       <GlassCard variant="panel" className="h-fit p-4 md:sticky md:top-24">
         <span className="field-label" id="cover-label">
-          Обложка <span className="text-mist-faint">· квадрат, сожмётся до 1000×1000</span>
+          Cover <span className="text-mist-faint">· square, resized to 1000×1000</span>
         </span>
         <button
           type="button"
@@ -393,22 +393,22 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
           onDrop={onDrop("cover")}
           disabled={busy}
           className={cx(
-            "relative grid aspect-square w-full place-items-center overflow-hidden rounded-3xl border-2 border-dashed bg-white/[0.06] shadow-[inset_0_2px_8px_rgba(0,0,0,0.35)] transition-colors",
-            dragOver === "cover" ? "border-white bg-white/10" : coverPreview ? "border-transparent" : "border-white/25",
+            "relative grid aspect-square w-full place-items-center overflow-hidden rounded-3xl border-2 border-dashed bg-black/[0.06] transition-colors",
+            dragOver === "cover" ? "border-white bg-black/10" : coverPreview ? "border-transparent" : "border-black/25",
           )}
         >
           {coverPreview ? (
             // eslint-disable-next-line @next/next/no-img-element -- local preview / private media
-            <img src={coverPreview} alt="Предпросмотр обложки" className="h-full w-full object-cover" />
+            <img src={coverPreview} alt="Cover preview" className="h-full w-full object-cover" />
           ) : (
             <span className="flex flex-col items-center gap-2 px-4 text-center text-mist-muted">
               <UploadIcon size={28} />
-              <span className="text-sm">{coverBusy ? "Обрабатываю…" : "Нажми или перетащи картинку"}</span>
+              <span className="text-sm">{coverBusy ? "Processing…" : "Click or drop an image"}</span>
             </span>
           )}
           {coverPreview ? (
             <span className="scrim absolute bottom-2 left-1/2 -translate-x-1/2 rounded-full px-3.5 py-1.5 text-xs font-semibold text-white">
-              {coverBusy ? "Обрабатываю…" : "Заменить"}
+              {coverBusy ? "Processing…" : "Replace"}
             </span>
           ) : null}
         </button>
@@ -425,7 +425,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
           }}
         />
         {coverError ? (
-          <p id="cover-error" role="alert" className="mt-2 text-sm text-rose-200">
+          <p id="cover-error" role="alert" className="mt-2 text-sm text-rose-600">
             {coverError}
           </p>
         ) : null}
@@ -434,10 +434,10 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
       <div className="grid gap-4">
         <GlassCard variant="panel" className="grid gap-4 p-4 md:p-5">
           <fieldset>
-            <legend className="field-label">Тип релиза</legend>
+            <legend className="field-label">Release type</legend>
             <div className="flex flex-wrap gap-2">
               {RELEASE_TYPES.map((option) => (
-                <label key={option} className="chip cursor-pointer has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-white" data-active={type === option}>
+                <label key={option} className="chip cursor-pointer has-[:focus-visible]:outline has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-black" data-active={type === option}>
                   <input
                     type="radio"
                     name="type"
@@ -454,9 +454,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
           </fieldset>
 
           <div>
-            <label htmlFor="release-title" className="field-label">
-              Название
-            </label>
+            <label htmlFor="release-title" className="field-label">Title</label>
             <input
               id="release-title"
               className="glass-input"
@@ -471,7 +469,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
 
           <div>
             <label htmlFor="release-date" className="field-label">
-              Дата выхода
+              Release date
             </label>
             <input
               id="release-date"
@@ -485,7 +483,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
 
           <div>
             <label htmlFor="release-description" className="field-label">
-              Описание <span className="text-mist-faint">· необязательно</span>
+              Description <span className="text-mist-faint">· optional</span>
             </label>
             <textarea
               id="release-description"
@@ -500,9 +498,9 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
 
         <GlassCard variant="panel" className="p-4 md:p-5">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-lg font-bold text-white">Треки</h2>
+            <h2 className="text-lg font-bold text-mist">Tracks</h2>
             <GlassButton onClick={() => audioInput.current?.click()} disabled={busy} className="!min-h-[40px] !px-4">
-              <PlusIcon size={16} /> Аудио
+              <PlusIcon size={16} /> Audio
             </GlassButton>
           </div>
           <input
@@ -550,17 +548,16 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
             onDrop={onDrop("audio")}
             className={cx(
               "mt-3 rounded-3xl border-2 border-dashed px-4 py-6 text-center text-sm text-mist-muted transition-colors",
-              dragOver === "audio" ? "border-white bg-white/10" : "border-white/20",
+              dragOver === "audio" ? "border-white bg-black/10" : "border-black/20",
             )}
           >
-            Перетащи сюда аудио или нажми «Аудио». MP3, M4A, WAV, FLAC, OGG — до {MAX_UPLOAD_MB} МБ на файл.
-            Длительность прочитается сама.
+            Drop audio here or click “Audio”. MP3, M4A, WAV, FLAC, OGG — up to {MAX_UPLOAD_MB} MB per file. The duration is read automatically.
           </div>
         </GlassCard>
 
         <GlassCard variant="panel" className="grid gap-3.5 p-4 md:p-5">
-          <h2 className="text-lg font-bold text-white">
-            Ссылки <span className="text-sm font-medium text-mist-faint">· необязательно</span>
+          <h2 className="text-lg font-bold text-mist">
+            Links <span className="text-sm font-medium text-mist-faint">· optional</span>
           </h2>
           {STREAMING_SERVICES.map((service) => (
             <div key={service}>
@@ -584,7 +581,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
         </GlassCard>
 
         {error ? (
-          <p role="alert" className="rounded-2xl border border-rose-300/40 bg-rose-950/60 px-4 py-3 text-sm text-rose-100">
+          <p role="alert" className="rounded-2xl border border-rose-300/40 bg-rose-950/60 px-4 py-3 text-sm text-rose-600">
             {error}
           </p>
         ) : null}
@@ -592,32 +589,27 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
 
         <div className="flex flex-wrap items-center gap-2.5">
           <GlassButton type="submit" variant="primary" disabled={busy} className="!min-h-[50px] !px-7 text-base">
-            {progress ? "Сохраняю…" : editing ? "Сохранить" : "Добавить релиз"}
+            {progress ? "Saving…" : editing ? "Save" : "Add release"}
           </GlassButton>
-          <GlassLink href={release ? `/releases/${release.id}` : "/"} variant="ghost" className="!min-h-[50px]">
-            Отмена
-          </GlassLink>
+          <GlassLink href={release ? `/releases/${release.id}` : "/"} variant="ghost" className="!min-h-[50px]">Cancel</GlassLink>
           {editing ? (
             <GlassButton variant="danger" disabled={busy} onClick={() => setConfirmDelete(true)} className="!min-h-[50px] sm:ml-auto">
-              <TrashIcon size={17} /> Удалить релиз
+              <TrashIcon size={17} /> Delete release
             </GlassButton>
           ) : null}
         </div>
       </div>
 
-      <GlassModal open={confirmDelete} onClose={() => (deleting ? undefined : setConfirmDelete(false))} title="Удалить релиз?" placement="center">
+      <GlassModal open={confirmDelete} onClose={() => (deleting ? undefined : setConfirmDelete(false))} title="Delete release?" placement="center">
         <div className="px-5 pb-5">
           <p className="text-mist-muted">
-            «{release?.title}», его обложка и все аудиофайлы будут удалены навсегда. Посты из архива останутся, но
-            потеряют привязку.
+            “{release?.title}”, its cover and all audio files will be deleted forever. Linked posts stay, but lose the link.
           </p>
           <div className="mt-5 flex gap-2.5">
             <GlassButton variant="danger" disabled={deleting} onClick={() => void onDelete()}>
-              {deleting ? "Удаляю…" : "Удалить навсегда"}
+              {deleting ? "Deleting…" : "Delete forever"}
             </GlassButton>
-            <GlassButton variant="ghost" disabled={deleting} onClick={() => setConfirmDelete(false)}>
-              Оставить
-            </GlassButton>
+            <GlassButton variant="ghost" disabled={deleting} onClick={() => setConfirmDelete(false)}>Keep</GlassButton>
           </div>
         </div>
       </GlassModal>

@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { ClockIcon } from "@/components/ui/icons";
 import type { MemoryItem } from "@/lib/supabase/types";
-import { pluralRu } from "@/lib/utils/format";
+import { plural } from "@/lib/utils/format";
 
 /** "On this day N years ago" banner on the home page. Hidden when there is nothing to recall. */
 export function MemoryTeaser({ items }: { items: MemoryItem[] }) {
@@ -27,11 +27,11 @@ export function MemoryTeaser({ items }: { items: MemoryItem[] }) {
       </span>
       <span className="min-w-0 flex-1">
         <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-[0.14em] text-mist-muted">
-          <ClockIcon size={14} /> В этот день
+          <ClockIcon size={14} /> On this day
         </span>
-        <span className="mt-0.5 block truncate font-semibold text-white">
-          {years.map((year) => `${year} ${pluralRu(year, "год", "года", "лет")}`).join(", ")} назад ·{" "}
-          {items.length} {pluralRu(items.length, "воспоминание", "воспоминания", "воспоминаний")}
+        <span className="mt-0.5 block truncate font-semibold text-mist">
+          {years.map((year) => `${year} ${plural(year, "year")}`).join(", ")} ago ·{" "}
+          {items.length} {plural(items.length, "memory", "memories")}
         </span>
       </span>
     </Link>

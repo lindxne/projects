@@ -23,7 +23,7 @@ export function PlayButton({ size = 52 }: { size?: number }) {
   const toggle = usePlayer((state) => state.toggle);
   return (
     <GlassSphere
-      label={isPlaying ? "Пауза" : "Играть"}
+      label={isPlaying ? "Pause" : "Play"}
       size={size}
       active
       disabled={disabled}
@@ -39,7 +39,7 @@ export function PreviousButton({ size = 40 }: { size?: number }) {
   const disabled = usePlayer((state) => state.currentId === null);
   const previous = usePlayer((state) => state.previous);
   return (
-    <GlassSphere label="Предыдущий трек" size={size} disabled={disabled} onClick={previous}>
+    <GlassSphere label="Previous track" size={size} disabled={disabled} onClick={previous}>
       <PrevIcon size={size * 0.44} />
     </GlassSphere>
   );
@@ -49,7 +49,7 @@ export function NextButton({ size = 40 }: { size?: number }) {
   const disabled = usePlayer((state) => state.currentId === null);
   const next = usePlayer((state) => state.next);
   return (
-    <GlassSphere label="Следующий трек" size={size} disabled={disabled} onClick={() => next()}>
+    <GlassSphere label="Next track" size={size} disabled={disabled} onClick={() => next()}>
       <NextIcon size={size * 0.44} />
     </GlassSphere>
   );
@@ -60,7 +60,7 @@ export function ShuffleButton({ size = 36 }: { size?: number }) {
   const toggleShuffle = usePlayer((state) => state.toggleShuffle);
   return (
     <GlassSphere
-      label={shuffle ? "Перемешивание включено" : "Перемешать"}
+      label={shuffle ? "Shuffle on" : "Shuffle"}
       aria-pressed={shuffle}
       size={size}
       active={shuffle}
@@ -72,9 +72,9 @@ export function ShuffleButton({ size = 36 }: { size?: number }) {
 }
 
 const REPEAT_LABEL = {
-  off: "Повтор выключен",
-  all: "Повтор всей очереди",
-  one: "Повтор одного трека",
+  off: "Repeat off",
+  all: "Repeat queue",
+  one: "Repeat one",
 } as const;
 
 export function RepeatButton({ size = 36 }: { size?: number }) {
@@ -97,7 +97,7 @@ export function MuteButton({ size = 36 }: { size?: number }) {
   const muted = usePlayer((state) => state.muted);
   const toggleMute = usePlayer((state) => state.toggleMute);
   return (
-    <GlassSphere label={muted ? "Включить звук" : "Выключить звук"} aria-pressed={muted} size={size} onClick={toggleMute}>
+    <GlassSphere label={muted ? "Unmute" : "Mute"} aria-pressed={muted} size={size} onClick={toggleMute}>
       {muted ? <MuteIcon size={size * 0.46} /> : <VolumeIcon size={size * 0.46} />}
     </GlassSphere>
   );
@@ -111,7 +111,7 @@ export function VolumeSlider({ className }: { className?: string }) {
   return (
     <GlassProgressBar
       className={className}
-      label="Громкость"
+      label="Volume"
       value={Math.round(shown * 100)}
       max={100}
       step={5}
@@ -133,10 +133,10 @@ export function SeekBar({ compact = false, className }: { compact?: boolean; cla
   const bar = (
     <GlassProgressBar
       className={cx("min-w-0 flex-1", compact && className)}
-      label="Позиция трека"
+      label="Track position"
       value={currentTime}
       max={duration}
-      valueText={`${formatDuration(currentTime)} из ${formatDuration(duration)}`}
+      valueText={`${formatDuration(currentTime)} of ${formatDuration(duration)}`}
       onChange={seek}
       animated={isPlaying}
       disabled={disabled}

@@ -57,7 +57,7 @@ async function loadFfmpeg(): Promise<FFmpeg> {
   } catch {
     instance = null;
     throw new VideoError(
-      "Не удалось загрузить видеоконвертер (32 МБ). Проверь соединение и попробуй ещё раз.",
+      "Could not load the video converter (32 MB). Check your connection and try again.",
       "load",
     );
   }
@@ -137,14 +137,14 @@ export async function processVideo(
 ): Promise<ProcessedVideo> {
   if (file.size > MAX_INPUT_MB * 1024 * 1024) {
     throw new VideoError(
-      `Видео ${(file.size / 1024 / 1024).toFixed(0)} МБ — слишком большое для обработки в браузере (до ${MAX_INPUT_MB} МБ). Обрежь его или сними в 1080p.`,
+      `Video is ${(file.size / 1024 / 1024).toFixed(0)} MB — too large to process in the browser (max ${MAX_INPUT_MB} MB).`,
       "size",
     );
   }
 
   onProgress({ stage: "loading", fraction: null });
   const ffmpeg = await loadFfmpeg();
-  if (signal?.aborted) throw new VideoError("Обработка отменена.", "cancelled");
+  if (signal?.aborted) throw new VideoError("Processing cancelled.", "cancelled");
 
   const extension = /\.([a-z0-9]{2,5})$/i.exec(file.name)?.[1]?.toLowerCase() ?? "mp4";
   const input = `input.${extension}`;
@@ -178,11 +178,11 @@ export async function processVideo(
     await ffmpeg.exec(["-hide_banner", "-i", input]);
     const probe = parseProbe(log);
     if (!probe.codec) {
-      throw new VideoError("Это не похоже на видео или файл повреждён. Попробуй MP4 или MOV.", "format");
+      throw new VideoError("This does not look like a video, or the file is corrupted. Try MP4 or MOV.", "format");
     }
     if (probe.duration !== null && probe.duration > MAX_VIDEO_SECONDS + 0.5) {
       throw new VideoError(
-        `Видео длится ${Math.round(probe.duration)} с, а лимит — ${MAX_VIDEO_SECONDS} с. Обрежь его в галерее и загрузи снова.`,
+        `Video is ${Math.round(probe.duration)} s long; the limit is ${MAX_VIDEO_SECONDS} s. Trim it and upload again.`,
         "duration",
       );
     }
@@ -221,12 +221,12 @@ export async function processVideo(
         "-movflags", "+faststart",
         output,
       ]);
-      if (signal?.aborted) throw new VideoError("Обработка отменена.", "cancelled");
+      if (signal?.aborted) throw new VideoError("Processing cancelled.", "cancelled");
       if (code !== 0) {
         if (log.some((line) => isOutOfMemory(line))) {
-          throw new VideoError("Браузеру не хватило памяти на конвертацию. Закрой другие вкладки или загрузи видео покороче.", "memory");
+          throw new VideoError("The browser ran out of memory while converting. Close other tabs or upload a shorter video.", "memory");
         }
-        throw new VideoError("Не получилось сконвертировать видео: кодек не поддерживается или файл повреждён.", "format");
+        throw new VideoError("Could not convert the video: unsupported codec or corrupted file.", "format");
       }
     }
 
@@ -236,12 +236,12 @@ export async function processVideo(
     if (posterCode !== 0) {
       posterCode = await ffmpeg.exec(["-i", output, "-frames:v", "1", "-vf", "scale='min(1280,iw)':-2", "-q:v", "4", poster]);
     }
-    if (posterCode !== 0) throw new VideoError("Не получилось сделать кадр-постер из видео.", "format");
+    if (posterCode !== 0) throw new VideoError("Could not create a poster frame from the video.", "format");
 
     const videoData = await ffmpeg.readFile(output);
     const posterData = await ffmpeg.readFile(poster);
     if (typeof videoData === "string" || typeof posterData === "string") {
-      throw new VideoError("Конвертер вернул неожиданный результат.", "format");
+      throw new VideoError("The converter returned an unexpected result.", "format");
     }
     const video = new Blob([new Uint8Array(videoData)], { type: "video/mp4" });
     const posterBlob = new Blob([new Uint8Array(posterData)], { type: "image/jpeg" });
@@ -269,12 +269,12 @@ export async function processVideo(
     };
   } catch (error) {
     if (error instanceof VideoError) throw error;
-    if (signal?.aborted) throw new VideoError("Обработка отменена.", "cancelled");
+    if (signal?.aborted) throw new VideoError("Processing cancelled.", "cancelled");
     if (isOutOfMemory(error)) {
       instance = null;
-      throw new VideoError("Браузеру не хватило памяти на конвертацию. Закрой другие вкладки или загрузи видео покороче.", "memory");
+      throw new VideoError("The browser ran out of memory while converting. Close other tabs or upload a shorter video.", "memory");
     }
-    throw new VideoError("Конвертация видео сорвалась. Попробуй ещё раз или другой файл.", "format");
+    throw new VideoError("Video conversion failed. Try again or use another file.", "format");
   } finally {
     ffmpeg.off("log", onLog);
     signal?.removeEventListener("abort", onAbort);

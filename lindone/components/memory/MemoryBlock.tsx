@@ -7,7 +7,7 @@ import { VideoIcon } from "@/components/ui/icons";
 import { createClient } from "@/lib/supabase/client";
 import type { MemoryItem } from "@/lib/supabase/types";
 import { describeDbError } from "@/lib/utils/errors";
-import { pluralRu } from "@/lib/utils/format";
+import { plural } from "@/lib/utils/format";
 
 /** "On this day N years ago": posts and releases from today's date in past years. */
 export function MemoryBlock() {
@@ -31,21 +31,20 @@ export function MemoryBlock() {
 
   if (error) {
     return (
-      <p role="alert" className="rounded-2xl border border-rose-300/40 bg-rose-950/60 px-4 py-3 text-sm text-rose-100">
-        Не получилось собрать воспоминания: {error}
+      <p role="alert" className="rounded-2xl border border-rose-300/40 bg-rose-950/60 px-4 py-3 text-sm text-rose-600">
+        Could not load memories: {error}
       </p>
     );
   }
   if (items === null) {
-    return <div role="status" aria-label="Загрузка" className="h-40 animate-pulse rounded-3xl bg-white/[0.07]" />;
+    return <div role="status" aria-label="Loading" className="h-40 animate-pulse rounded-3xl bg-black/[0.07]" />;
   }
   if (items.length === 0) {
     return (
       <GlassCard variant="panel" className="mx-auto max-w-md px-6 py-12 text-center">
-        <h2 className="font-display text-xl font-bold text-white">Сегодня без воспоминаний</h2>
+        <h2 className="font-display text-xl font-bold text-mist">No memories today</h2>
         <p className="mt-2 text-mist-muted">
-          В этот день в прошлые годы ничего не выходило и не снималось. Загляни завтра — или загрузи старые фото с
-          настоящей датой.
+          Nothing was released or shot on this day in past years. Come back tomorrow.
         </p>
       </GlassCard>
     );
@@ -57,8 +56,8 @@ export function MemoryBlock() {
     <div className="grid gap-6">
       {years.map((year) => (
         <section key={year} aria-labelledby={`memory-${year}`}>
-          <h2 id={`memory-${year}`} className="mb-3 px-1 font-display text-xl font-bold text-white">
-            {year} {pluralRu(year, "год", "года", "лет")} назад
+          <h2 id={`memory-${year}`} className="mb-3 px-1 font-display text-xl font-bold text-mist">
+            {year} {plural(year, "year")} ago
           </h2>
           <ul className="grid grid-cols-2 gap-3 md:grid-cols-4">
             {items
@@ -79,11 +78,11 @@ export function MemoryBlock() {
                       ) : null}
                     </span>
                     <span className="block px-1 pb-0.5 pt-2">
-                      <span className="block truncate text-sm font-semibold text-white">
-                        {item.title || (item.media_type === "video" ? "Видео" : "Фото")}
+                      <span className="block truncate text-sm font-semibold text-mist">
+                        {item.title || (item.media_type === "video" ? "Video" : "Photo")}
                       </span>
                       <span className="block text-xs text-mist-muted">
-                        {item.kind === "release" ? "Релиз" : "Архив"} ·{" "}
+                        {item.kind === "release" ? "Release" : "Post"} ·{" "}
                         {new Date(item.happened_at).getFullYear()}
                       </span>
                     </span>

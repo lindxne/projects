@@ -3,20 +3,20 @@
 @tailwind utilities;
 
 :root {
-  color-scheme: dark;
-  /* Light source for specular highlights: the cursor (desktop) or scroll position (touch). */
-  --mx: 50vw;
-  --my: 20vh;
-  --scroll: 0;
+  color-scheme: light;
   --player-height: 84px;
   --nav-height: 64px;
   --safe-bottom: env(safe-area-inset-bottom, 0px);
   --safe-top: env(safe-area-inset-top, 0px);
+  /* Player palette, set from the current cover (see PlayerTheme). */
+  --player-bg: 245 245 244;
+  --player-accent: 23 23 23;
+  --player-fg: 17 17 19;
 }
 
 @layer base {
   html {
-    background: #07060d;
+    background: #fafaf9;
     -webkit-text-size-adjust: 100%;
     -webkit-tap-highlight-color: transparent;
   }
@@ -24,17 +24,14 @@
   body {
     @apply min-h-dvh bg-ink font-sans text-mist antialiased;
     overscroll-behavior-y: none;
-    /* Every glyph glows a little, as if lit through glass; inherited by all text. */
-    text-shadow: 0 0 0.75em rgba(255, 255, 255, 0.24);
   }
 
   ::selection {
-    background: rgba(122, 69, 255, 0.55);
-    color: #fff;
+    background: rgba(17, 17, 19, 0.12);
   }
 
   :focus-visible {
-    outline: 2px solid #fff;
+    outline: 2px solid #111113;
     outline-offset: 3px;
     border-radius: 10px;
   }
@@ -53,69 +50,24 @@
 }
 
 @layer components {
-  /* -----------------------------------------------------------------------
-     Liquid Glass (CSS layer), after Apple's iOS 26 material: the surface is
-     clear rather than dark, its edge is a bright white specular rim, and the
-     body picks up a soft inner glow. Everything in the interface is made of it,
-     text included (see .glass-text).
-     - backdrop-filter: light blur + saturation (the lens in LiquidLens.tsx
-       prepends edge refraction through --glass-lens where the browser can),
-     - inset shadows: top and bottom highlights, inner glow (thickness),
-     - ::before: 1px white rim, brightest at the top-left and bottom-right,
-     - ::after: specular highlight that follows the global light (--mx/--my).
-     --------------------------------------------------------------------- */
+  /* Light Liquid Glass: frosted white, a thin bright rim and a soft shadow.
+     ::after is a highlight under the cursor, positioned in element coordinates
+     (--lx/--ly, set by LightTracker on the hovered surface). */
   .glass {
-    --glass-blur: 14px;
-    --glass-tint: rgba(20, 17, 38, 0.3);
-    --glass-radius: 30px;
+    --glass-blur: 18px;
+    --glass-tint: rgba(255, 255, 255, 0.62);
+    --glass-radius: 24px;
     position: relative;
     isolation: isolate;
     border-radius: var(--glass-radius);
-    background:
-      linear-gradient(
-        180deg,
-        rgba(255, 255, 255, 0.2) 0%,
-        rgba(255, 255, 255, 0.05) 30%,
-        rgba(255, 255, 255, 0.03) 64%,
-        rgba(255, 255, 255, 0.13) 100%
-      ),
-      var(--glass-tint);
-    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(185%) brightness(0.86);
-    backdrop-filter: var(--glass-lens,) blur(var(--glass-blur)) saturate(185%) brightness(0.86);
+    background: var(--glass-tint);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
     box-shadow:
-      inset 0 1px 0.5px rgba(255, 255, 255, 0.7),
-      inset 0 -1px 0.5px rgba(255, 255, 255, 0.32),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.1),
-      inset 0 12px 22px -14px rgba(255, 255, 255, 0.34),
-      inset 0 -16px 26px -18px rgba(255, 255, 255, 0.2),
-      0 0 26px -10px rgba(255, 255, 255, 0.38),
-      0 26px 60px -26px rgba(0, 0, 0, 0.72),
-      0 2px 6px rgba(0, 0, 0, 0.2);
-  }
-
-  .glass::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    padding: 1.25px;
-    border-radius: inherit;
-    background: linear-gradient(
-      calc(135deg + var(--scroll) * 50deg),
-      rgba(255, 255, 255, 0.98) 0%,
-      rgba(255, 255, 255, 0.34) 20%,
-      rgba(255, 255, 255, 0.1) 46%,
-      rgba(255, 255, 255, 0.26) 74%,
-      rgba(255, 255, 255, 0.86) 100%
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask:
-      linear-gradient(#000 0 0) content-box exclude,
-      linear-gradient(#000 0 0);
-    pointer-events: none;
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 12px 32px -18px rgba(0, 0, 0, 0.18);
   }
 
   .glass::after {
@@ -124,189 +76,114 @@
     inset: 0;
     z-index: -1;
     border-radius: inherit;
-    background: radial-gradient(
-        520px circle at var(--mx) var(--my),
-        rgba(255, 255, 255, 0.2),
-        rgba(255, 255, 255, 0.06) 32%,
-        transparent 62%
-      )
-      fixed;
-    mix-blend-mode: screen;
+    background: radial-gradient(240px circle at var(--lx, 50%) var(--ly, 0%), rgba(255, 255, 255, 0.9), transparent 70%);
+    opacity: var(--lo, 0);
+    transition: opacity 0.25s ease;
     pointer-events: none;
   }
 
-  /* Cards in grids/feeds: lighter blur (cheap on phones). */
   .glass-card {
-    --glass-blur: 10px;
-    --glass-radius: 26px;
-    --glass-tint: rgba(20, 17, 38, 0.26);
+    --glass-radius: 20px;
   }
 
-  /* Bars and dialogs that sit over arbitrary content: a deeper tint keeps text readable. */
   .glass-strong {
-    --glass-blur: 16px;
-    --glass-tint: rgba(16, 13, 32, 0.44);
+    --glass-tint: rgba(255, 255, 255, 0.8);
   }
 
   .glass-pill {
     --glass-radius: 999px;
   }
 
-  /* Lit glass: the selected / primary state (the "Like" pill). Bright and still see-through. */
   .glass-lit {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0.2) 55%, rgba(255, 255, 255, 0.3) 100%);
-    box-shadow:
-      inset 0 1px 0.5px rgba(255, 255, 255, 0.95),
-      inset 0 -1px 0.5px rgba(255, 255, 255, 0.45),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.3),
-      inset 0 0 14px rgba(255, 255, 255, 0.18),
-      0 0 22px -6px rgba(255, 255, 255, 0.55),
-      0 10px 24px -14px rgba(0, 0, 0, 0.7);
+    background: #111113;
+    color: #fff;
+    box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.5);
   }
 
-  /* Recessed glass: wells for form rows, drop zones and progress tracks. */
   .glass-inset {
-    border: 1px solid rgba(255, 255, 255, 0.16);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.1));
-    box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.32),
-      inset 0 -1px 0.5px rgba(255, 255, 255, 0.28);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.025);
   }
 
-  /* Small glass label for text placed over media. */
+  /* Label placed over media. */
   .scrim {
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04)), rgba(14, 12, 28, 0.5);
-    -webkit-backdrop-filter: blur(10px) saturate(180%);
-    backdrop-filter: blur(10px) saturate(180%);
-    box-shadow:
-      inset 0 1px 0.5px rgba(255, 255, 255, 0.6),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.16);
-  }
-
-  /* Glass text: translucent fill, bright edge and a glow, so the backdrop shows through the letters.
-     The fill follows the text colour, so muted and error text keep their meaning. */
-  @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-    h1,
-    h2,
-    h3,
-    .glass-text {
-      background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.97) 0%, rgba(255, 255, 255, 0.6) 54%, rgba(255, 255, 255, 0.84) 100%);
-      background-image: linear-gradient(
-        180deg,
-        color-mix(in srgb, currentColor 97%, transparent) 0%,
-        color-mix(in srgb, currentColor 60%, transparent) 54%,
-        color-mix(in srgb, currentColor 84%, transparent) 100%
-      );
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-      -webkit-text-stroke: 0.012em rgba(255, 255, 255, 0.55);
-      text-shadow: 0 0 0.5em rgba(255, 255, 255, 0.3);
-    }
-
-    @media (forced-colors: active) {
-      h1,
-      h2,
-      h3,
-      .glass-text {
-        background-image: none;
-        -webkit-text-fill-color: currentColor;
-        -webkit-text-stroke: 0;
-      }
-    }
+    color: #fff;
+    background: rgba(0, 0, 0, 0.38);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    backdrop-filter: blur(10px) saturate(160%);
   }
 
   .glass-input {
     @apply w-full rounded-2xl px-4 py-3 text-mist placeholder:text-mist-faint;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.12));
-    box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.34),
-      inset 0 -1px 0.5px rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #fff;
     transition:
       border-color 0.2s ease,
-      background-color 0.2s ease,
       box-shadow 0.2s ease;
   }
 
   .glass-input:focus {
-    border-color: rgba(255, 255, 255, 0.75);
-    box-shadow:
-      inset 0 2px 6px rgba(0, 0, 0, 0.3),
-      inset 0 -1px 0.5px rgba(255, 255, 255, 0.4),
-      0 0 22px -6px rgba(255, 255, 255, 0.5);
+    border-color: rgba(0, 0, 0, 0.45);
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
     outline: none;
   }
 
   .glass-input:focus-visible {
-    outline: 2px solid #fff;
+    outline: 2px solid #111113;
     outline-offset: 2px;
-  }
-
-  select.glass-input option {
-    background: #15122a;
-    color: #fff;
   }
 
   .field-label {
     @apply mb-1.5 block text-sm font-medium text-mist-muted;
   }
 
-  /* Round glass button: a clear drop with a bright rim. */
   .glass-sphere {
     position: relative;
-    isolation: isolate;
     display: inline-grid;
     place-items: center;
     flex: none;
     border-radius: 999px;
-    color: #fff;
-    background:
-      radial-gradient(120% 120% at 30% 12%, rgba(255, 255, 255, 0.36) 0%, rgba(255, 255, 255, 0.07) 46%, rgba(255, 255, 255, 0.16) 100%),
-      rgba(20, 17, 38, 0.26);
-    -webkit-backdrop-filter: blur(8px) saturate(185%);
-    backdrop-filter: blur(8px) saturate(185%);
+    color: currentColor;
+    background: rgba(255, 255, 255, 0.7);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    backdrop-filter: blur(10px) saturate(160%);
     box-shadow:
-      inset 0 1px 0.5px rgba(255, 255, 255, 0.9),
-      inset 0 -1px 0.5px rgba(255, 255, 255, 0.4),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.2),
-      inset 0 0 10px rgba(255, 255, 255, 0.12),
-      0 0 16px -8px rgba(255, 255, 255, 0.5),
-      0 8px 20px -10px rgba(0, 0, 0, 0.75);
+      inset 0 0 0 1px rgba(0, 0, 0, 0.07),
+      0 4px 12px -8px rgba(0, 0, 0, 0.3);
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease;
   }
 
-  .glass-sphere svg,
-  .glass-icon {
-    filter: drop-shadow(0 0 5px rgba(255, 255, 255, 0.55));
+  .glass-sphere:hover {
+    background: #fff;
   }
 
   .glass-sphere[data-active="true"] {
-    background: radial-gradient(120% 120% at 30% 12%, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.38) 50%, rgba(255, 255, 255, 0.52) 100%);
-    box-shadow:
-      inset 0 1px 0.5px #fff,
-      inset 0 -1px 0.5px rgba(255, 255, 255, 0.6),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.4),
-      0 0 24px -4px rgba(255, 255, 255, 0.7),
-      0 8px 20px -10px rgba(0, 0, 0, 0.75);
+    background: #111113;
+    color: #fff;
   }
 
   .glass-sphere:disabled {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
   }
 
   .chip {
-    @apply inline-flex min-h-[36px] items-center gap-1.5 rounded-full px-3.5 text-sm font-medium text-mist-muted transition-colors;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.04));
-    box-shadow:
-      inset 0 1px 0.5px rgba(255, 255, 255, 0.45),
-      inset 0 0 0 1px rgba(255, 255, 255, 0.16);
+    @apply inline-flex min-h-[34px] items-center gap-1.5 rounded-full px-3.5 text-sm font-medium text-mist-muted transition-colors;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.09);
+  }
+
+  .chip:hover {
+    @apply text-mist;
   }
 
   .chip[aria-pressed="true"],
   .chip[aria-current="true"],
   .chip[data-active="true"] {
-    @apply glass-lit text-white;
+    background: #111113;
+    color: #fff;
+    box-shadow: none;
   }
 }
 
@@ -328,75 +205,89 @@
   }
 }
 
-/* CSS background: always present under the WebGL canvas, and the fallback without WebGL. */
-.bg-fallback {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
-  background:
-    radial-gradient(60% 50% at 18% 12%, rgba(122, 69, 255, 0.55), transparent 70%),
-    radial-gradient(50% 45% at 86% 22%, rgba(240, 64, 154, 0.42), transparent 70%),
-    radial-gradient(55% 50% at 70% 88%, rgba(58, 120, 255, 0.45), transparent 70%),
-    radial-gradient(45% 40% at 12% 82%, rgba(25, 185, 201, 0.34), transparent 70%),
-    #07060d;
-}
-
-.bg-fallback::before,
-.bg-fallback::after {
-  content: "";
-  position: absolute;
-  width: 60vmax;
-  height: 60vmax;
-  border-radius: 50%;
-  filter: blur(60px);
-  opacity: 0.55;
-  will-change: transform;
-}
-
-.bg-fallback::before {
-  top: -20vmax;
-  left: -10vmax;
-  background: radial-gradient(circle, rgba(240, 64, 154, 0.8), transparent 65%);
-  animation: drift 26s ease-in-out infinite;
-}
-
-.bg-fallback::after {
-  right: -20vmax;
-  bottom: -25vmax;
-  background: radial-gradient(circle, rgba(58, 120, 255, 0.8), transparent 65%);
-  animation: drift 34s ease-in-out infinite reverse;
-}
-
-@keyframes drift {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
-  }
-  50% {
-    transform: translate3d(6%, -8%, 0) scale(1.14);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
 }
 
-/* background-attachment: fixed is unreliable on touch browsers: use a static highlight. */
-@media (hover: none) {
-  .glass::after {
-    background: radial-gradient(
-      120% 90% at calc(20% + var(--scroll) * 60%) -10%,
-      rgba(255, 255, 255, 0.2),
-      rgba(255, 255, 255, 0.05) 40%,
-      transparent 68%
-    );
+/* Player tinted by the current cover (palette from lib/color/palette.ts). */
+.player-themed {
+  --glass-tint: transparent;
+  color: rgb(var(--player-fg));
+  background: linear-gradient(120deg, rgb(var(--player-bg) / 0.94), rgb(var(--player-bg2, var(--player-bg)) / 0.94));
+  transition:
+    background 0.6s ease,
+    color 0.6s ease;
+}
+
+.player-themed .text-mist {
+  color: rgb(var(--player-fg));
+}
+
+.player-themed .text-mist-muted {
+  color: rgb(var(--player-fg) / 0.72);
+}
+
+.player-themed .text-mist-faint {
+  color: rgb(var(--player-fg) / 0.55);
+}
+
+.player-themed .glass-sphere {
+  color: rgb(var(--player-fg));
+  background: rgb(var(--player-fg) / 0.1);
+  box-shadow: none;
+}
+
+.player-themed .glass-sphere:hover {
+  background: rgb(var(--player-fg) / 0.18);
+}
+
+.player-themed .glass-sphere[data-active="true"] {
+  color: rgb(var(--player-bg));
+  background: rgb(var(--player-fg));
+}
+
+.player-themed .bg-black\/\[0\.08\] {
+  background: rgb(var(--player-fg) / 0.2);
+}
+
+.logo-draw path {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: logo-draw 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.1s forwards;
+}
+
+.logo-draw .logo-dot {
+  opacity: 0;
+  animation: logo-dot 0.3s ease 1.5s forwards;
+}
+
+@keyframes logo-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes logo-dot {
+  to {
+    opacity: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-draw path {
+    stroke-dashoffset: 0;
+    animation: none;
+  }
+
+  .logo-draw .logo-dot {
+    opacity: 1;
+    animation: none;
   }
 }

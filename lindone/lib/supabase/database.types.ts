@@ -214,6 +214,14 @@ export type Database = {
     };
     Functions: {
       is_owner: { Args: Record<PropertyKey, never>; Returns: boolean };
+      feed_page: {
+        Args: { p_kind?: string; p_before_at?: string; p_before_id?: string; p_limit?: number };
+        Returns: {
+          kind: string;
+          id: string;
+          sort_at: string;
+        }[];
+      };
       on_this_day: {
         Args: { tz?: string };
         Returns: {

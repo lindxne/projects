@@ -17,7 +17,7 @@ async function readAll<T extends { id: string }>(
   const rows: T[] = [];
   for (let afterId = FIRST_ID; ; ) {
     const { data, error } = await page(afterId);
-    if (error || !data) return { data: rows, error: error ?? { message: "нет данных" } };
+    if (error || !data) return { data: rows, error: error ?? { message: "no data" } };
     rows.push(...data);
     const last = data.at(-1);
     if (data.length < PAGE || !last) return { data: rows, error: null };
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
   const {
     data: { user },
   } = await supabase.auth.getUser();
-  if (!user) return NextResponse.json({ error: "Нужно войти." }, { status: 401 });
+  if (!user) return NextResponse.json({ error: "Sign in required." }, { status: 401 });
 
   // PostgREST caps every response (1000 rows by default), so each table is read page by page.
   const [releases, tracks, posts] = await Promise.all([
@@ -47,7 +47,7 @@ export async function GET(request: Request) {
   posts.data.sort((a, b) => Date.parse(a.created_at) - Date.parse(b.created_at) || a.id.localeCompare(b.id));
   const failed = releases.error ?? tracks.error ?? posts.error;
   if (failed) {
-    return NextResponse.json({ error: `Не удалось прочитать архив: ${failed.message}` }, { status: 500 });
+    return NextResponse.json({ error: `Could not read the archive: ${failed.message}` }, { status: 500 });
   }
 
   // Sign every file in batches, bucket by bucket.

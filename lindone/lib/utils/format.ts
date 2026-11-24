@@ -9,14 +9,14 @@ export function formatDuration(totalSeconds: number | null | undefined): string 
   return hours > 0 ? `${hours}:${String(minutes).padStart(2, "0")}:${rest}` : `${minutes}:${rest}`;
 }
 
-const dateFormatter = new Intl.DateTimeFormat("ru-RU", {
+const dateFormatter = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   month: "long",
   year: "numeric",
   timeZone: "UTC",
 });
 
-const dateTimeFormatter = new Intl.DateTimeFormat("ru-RU", {
+const dateTimeFormatter = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
   month: "long",
   year: "numeric",
@@ -39,12 +39,9 @@ export function yearOf(date: string | null | undefined): string {
   return date ? date.slice(0, 4) : "";
 }
 
-export function pluralRu(count: number, one: string, few: string, many: string): string {
-  const mod10 = count % 10;
-  const mod100 = count % 100;
-  if (mod10 === 1 && mod100 !== 11) return one;
-  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return few;
-  return many;
+/** "1 track", "2 tracks"; returns only the word. */
+export function plural(count: number, one: string, many = `${one}s`): string {
+  return count === 1 ? one : many;
 }
 
 export function cx(...parts: Array<string | false | null | undefined>): string {

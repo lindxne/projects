@@ -10,7 +10,7 @@ interface TagPickerProps {
 
 export function TagPicker({ value, onChange, disabled }: TagPickerProps) {
   return (
-    <div role="group" aria-label="Теги" className="flex flex-wrap gap-2">
+    <div role="group" aria-label="Tags" className="flex flex-wrap gap-2">
       {POST_TAGS.map((tag) => {
         const selected = value.includes(tag);
         return (

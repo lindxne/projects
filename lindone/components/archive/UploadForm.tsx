@@ -11,7 +11,7 @@ import { createClient } from "@/lib/supabase/client";
 import { MAX_UPLOAD_MB, UploadError, assertUploadSize, removeMedia, uploadFile } from "@/lib/supabase/storage";
 import type { PostInsert, PostTag } from "@/lib/supabase/types";
 import { SaveError, describeDbError, describeError } from "@/lib/utils/errors";
-import { cx, pluralRu } from "@/lib/utils/format";
+import { cx, plural } from "@/lib/utils/format";
 import { MAX_VIDEO_SECONDS, processVideo, type VideoProgress } from "@/lib/video/ffmpeg";
 import { LinkPicker, type PostLink } from "./LinkPicker";
 import { TagPicker } from "./TagPicker";
@@ -31,10 +31,10 @@ interface Progress {
 }
 
 const VIDEO_STAGE: Record<VideoProgress["stage"], string> = {
-  loading: "загружаю конвертер (один раз, 32 МБ)…",
-  analysing: "читаю видео…",
-  transcoding: "конвертирую в H.264…",
-  poster: "делаю постер…",
+  loading: "loading converter (once, 32 MB)…",
+  analysing: "reading video…",
+  transcoding: "converting to H.264…",
+  poster: "making poster…",
 };
 
 function kindOf(file: File): "photo" | "video" | null {
@@ -87,7 +87,7 @@ export function UploadForm() {
     for (const file of Array.from(files)) {
       const kind = kindOf(file);
       if (!kind) {
-        rejected.push(`«${file.name}» — не фото и не видео`);
+        rejected.push(`“${file.name}” — not a photo or video`);
         continue;
       }
       let preview: string | null = null;
@@ -97,7 +97,7 @@ export function UploadForm() {
       }
       added.push({ key: crypto.randomUUID(), file, kind, preview, status: "waiting" });
     }
-    if (rejected.length > 0) setError(`Не добавлено: ${rejected.join("; ")}.`);
+    if (rejected.length > 0) setError(`Not added: ${rejected.join(";")}.`);
     setItems((current) => [...current, ...added]);
   };
 
@@ -121,15 +121,15 @@ export function UploadForm() {
       };
 
       if (item.kind === "photo") {
-        setProgress({ label: `${prefix}: сжимаю фото…`, fraction: null });
+        setProgress({ label: `${prefix}: compressing photo…`, fraction: null });
         const photo = await resizeToMax(item.file, 2048);
-        assertUploadSize(photo.blob, "Фото");
+        assertUploadSize(photo.blob, "Photo");
         row.media_url = await uploadFile({
           bucket: "media",
           file: photo.blob,
           contentType: photo.contentType,
           signal,
-          onProgress: (fraction) => setProgress({ label: `${prefix}: загружаю фото…`, fraction }),
+          onProgress: (fraction) => setProgress({ label: `${prefix}: uploading photo…`, fraction }),
         });
         uploaded.push(row.media_url);
         row.width = photo.width;
@@ -140,7 +140,7 @@ export function UploadForm() {
           ({ stage, fraction }) => setProgress({ label: `${prefix}: ${VIDEO_STAGE[stage]}`, fraction }),
           signal,
         );
-        assertUploadSize(video.video, "Видео после конвертации");
+        assertUploadSize(video.video, "Converted video");
         row.poster_url = await uploadFile({ bucket: "posters", file: video.poster, contentType: video.posterType, signal });
         uploaded.push(row.poster_url);
         row.media_url = await uploadFile({
@@ -148,7 +148,7 @@ export function UploadForm() {
           file: video.video,
           contentType: "video/mp4",
           signal,
-          onProgress: (fraction) => setProgress({ label: `${prefix}: загружаю видео…`, fraction }),
+          onProgress: (fraction) => setProgress({ label: `${prefix}: uploading video…`, fraction }),
         });
         uploaded.push(row.media_url);
         row.width = video.width || null;
@@ -156,8 +156,8 @@ export function UploadForm() {
         row.duration_sec = Math.max(1, Math.round(video.duration));
       }
 
-      if (signal.aborted) throw new UploadError("Загрузка отменена.", "network");
-      setProgress({ label: `${prefix}: сохраняю…`, fraction: null });
+      if (signal.aborted) throw new UploadError("Upload cancelled.", "network");
+      setProgress({ label: `${prefix}: saving…`, fraction: null });
       const { error: insertError } = await createClient().from("posts").insert(row);
       if (insertError) throw new SaveError(describeDbError(insertError));
     } catch (caught) {
@@ -172,7 +172,7 @@ export function UploadForm() {
     if (busy) return;
     const pending = items.filter((item) => item.status !== "done");
     if (pending.length === 0) {
-      setError("Сначала выбери фото или видео.");
+      setError("Choose a photo or video first.");
       return;
     }
     setError(null);
@@ -184,7 +184,7 @@ export function UploadForm() {
       if (controller.signal.aborted) break;
       patch(item.key, { status: "working", error: undefined });
       try {
-        await saveOne(item, `Файл ${index + 1} из ${pending.length}`, controller.signal);
+        await saveOne(item, `File ${index + 1} of ${pending.length}`, controller.signal);
         patch(item.key, { status: "done" });
       } catch (caught) {
         failures += 1;
@@ -195,14 +195,14 @@ export function UploadForm() {
     abort.current = null;
     setProgress(null);
     if (controller.signal.aborted) {
-      setError("Загрузка остановлена. Уже сохранённые посты остались в архиве.");
+      setError("Upload stopped. Posts already saved stay in the feed.");
     } else if (failures > 0) {
       setError(
-        `${failures} ${pluralRu(failures, "файл", "файла", "файлов")} не удалось сохранить — причина указана рядом с каждым. Остальные уже в архиве; нажми «Загрузить», чтобы повторить.`,
+        `${failures} ${plural(failures, "file")} could not be saved — see the reason next to each. The rest were saved.`,
       );
       router.refresh();
     } else {
-      router.push("/archive");
+      router.push("/");
       router.refresh();
     }
   };
@@ -224,14 +224,13 @@ export function UploadForm() {
           disabled={busy}
           className={cx(
             "flex w-full flex-col items-center gap-2 rounded-3xl border-2 border-dashed px-4 py-9 text-center transition-colors",
-            dragOver ? "border-white bg-white/10" : "border-white/25 bg-black/25",
+            dragOver ? "border-white bg-black/10" : "border-black/25 bg-black/25",
           )}
         >
-          <UploadIcon size={30} className="text-white" />
-          <span className="font-semibold text-white">Выбери или перетащи фото и видео</span>
+          <UploadIcon size={30} className="text-mist" />
+          <span className="font-semibold text-mist">Choose or drop photos and videos</span>
           <span className="text-sm text-mist-muted">
-            Фото сожмётся до 2048 px (WebP). Видео — до {MAX_VIDEO_SECONDS} секунд, сконвертируется в H.264 1080p прямо в
-            браузере. Итоговый файл — до {MAX_UPLOAD_MB} МБ.
+            Photos are resized to 2048 px (WebP). Videos up to {MAX_VIDEO_SECONDS} seconds are converted to H.264 1080p right in the browser. Final file up to {MAX_UPLOAD_MB} MB.
           </span>
         </button>
         <input
@@ -249,10 +248,10 @@ export function UploadForm() {
         />
 
         {items.length > 0 ? (
-          <ul className="mt-3 grid gap-2" aria-label="Выбранные файлы">
+          <ul className="mt-3 grid gap-2" aria-label="Selected files">
             {items.map((item) => (
               <li key={item.key} className="flex items-center gap-3 glass-inset rounded-2xl p-2">
-                <span className="grid h-14 w-14 flex-none place-items-center overflow-hidden rounded-xl bg-white/10 text-mist-muted">
+                <span className="grid h-14 w-14 flex-none place-items-center overflow-hidden rounded-xl bg-black/10 text-mist-muted">
                   {item.preview ? (
                     // eslint-disable-next-line @next/next/no-img-element -- local preview
                     <img src={item.preview} alt="" className="h-full w-full object-cover" />
@@ -261,23 +260,23 @@ export function UploadForm() {
                   )}
                 </span>
                 <span className="min-w-0 flex-1">
-                  <span className="block truncate text-sm font-semibold text-white">{item.file.name}</span>
-                  <span className={cx("block text-xs", item.status === "failed" ? "text-rose-200" : "text-mist-muted")} role={item.status === "failed" ? "alert" : undefined}>
+                  <span className="block truncate text-sm font-semibold text-mist">{item.file.name}</span>
+                  <span className={cx("block text-xs", item.status === "failed" ? "text-rose-600" : "text-mist-muted")} role={item.status === "failed" ? "alert" : undefined}>
                     {item.status === "failed"
                       ? item.error
                       : item.status === "done"
-                        ? "В архиве"
+                        ? "Saved"
                         : item.status === "working"
-                          ? "Обрабатываю…"
-                          : `${item.kind === "video" ? "Видео" : "Фото"} · ${(item.file.size / 1024 / 1024).toFixed(1)} МБ`}
+                          ? "Processing…"
+                          : `${item.kind === "video" ? "Video" : "Photo"} · ${(item.file.size / 1024 / 1024).toFixed(1)} MB`}
                   </span>
                 </span>
                 {item.status !== "done" && !busy ? (
                   <button
                     type="button"
                     onClick={() => setItems((current) => current.filter((other) => other.key !== item.key))}
-                    aria-label={`Убрать ${item.file.name}`}
-                    className="grid h-11 w-11 flex-none place-items-center rounded-full text-mist-muted hover:bg-white/10 hover:text-white"
+                    aria-label={`Remove ${item.file.name}`}
+                    className="grid h-11 w-11 flex-none place-items-center rounded-full text-mist-muted hover:bg-black/10 hover:text-mist"
                   >
                     <CloseIcon size={16} />
                   </button>
@@ -291,7 +290,7 @@ export function UploadForm() {
       <GlassCard variant="panel" className="grid gap-4 p-4 md:p-5">
         <div>
           <label htmlFor="upload-caption" className="field-label">
-            Подпись <span className="text-mist-faint">· необязательно{items.length > 1 ? ", одна на все файлы" : ""}</span>
+            Caption <span className="text-mist-faint">· optional{items.length > 1 ? ", one for all files" : ""}</span>
           </label>
           <textarea
             id="upload-caption"
@@ -303,13 +302,13 @@ export function UploadForm() {
           />
         </div>
         <div>
-          <span className="field-label">Теги</span>
+          <span className="field-label">Tags</span>
           <TagPicker value={tags} onChange={setTags} disabled={busy} />
         </div>
         <LinkPicker value={link} onChange={setLink} disabled={busy} />
         <div>
           <label htmlFor="upload-date" className="field-label">
-            Дата <span className="text-mist-faint">· пусто — сегодня; поставь старую, чтобы пост встал на своё место в хронологии</span>
+            Date <span className="text-mist-faint">· empty means today; set an older date to place the post in the timeline</span>
           </label>
           <input
             id="upload-date"
@@ -324,7 +323,7 @@ export function UploadForm() {
       </GlassCard>
 
       {error ? (
-        <p role="alert" className="rounded-2xl border border-rose-300/40 bg-rose-950/60 px-4 py-3 text-sm text-rose-100">
+        <p role="alert" className="rounded-2xl border border-rose-300/40 bg-rose-950/60 px-4 py-3 text-sm text-rose-600">
           {error}
         </p>
       ) : null}
@@ -332,16 +331,12 @@ export function UploadForm() {
 
       <div className="flex flex-wrap gap-2.5">
         <GlassButton type="submit" variant="primary" disabled={busy || remaining === 0} className="!min-h-[50px] !px-7 text-base">
-          {busy ? "Загружаю…" : remaining > 1 ? `Загрузить ${remaining}` : "Загрузить"}
+          {busy ? "Uploading…" : remaining > 1 ? `Upload ${remaining}` : "Upload"}
         </GlassButton>
         {busy ? (
-          <GlassButton variant="ghost" className="!min-h-[50px]" onClick={() => abort.current?.abort()}>
-            Остановить
-          </GlassButton>
+          <GlassButton variant="ghost" className="!min-h-[50px]" onClick={() => abort.current?.abort()}>Stop</GlassButton>
         ) : (
-          <GlassLink href="/archive" variant="ghost" className="!min-h-[50px]">
-            Отмена
-          </GlassLink>
+          <GlassLink href="/" variant="ghost" className="!min-h-[50px]">Cancel</GlassLink>
         )}
       </div>
     </form>

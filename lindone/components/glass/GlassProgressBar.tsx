@@ -7,7 +7,7 @@ interface GlassProgressBarProps {
   value: number;
   max: number;
   label: string;
-  /** Human-readable value for screen readers, e.g. "1:05 из 3:20". */
+  /** Human-readable value for screen readers, e.g. "1:05 of 3:20". */
   valueText?: string;
   onChange: (value: number) => void;
   /** Called continuously while dragging (for live preview). */
@@ -110,13 +110,13 @@ export function GlassProgressBar({
         className,
       )}
     >
-      <div className="relative h-[7px] w-full overflow-hidden rounded-full bg-white/[0.12] shadow-[inset_0_1px_2px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.22)]">
+      <div className="relative h-[7px] w-full overflow-hidden rounded-full bg-black/[0.08]">
         <div
-          className="absolute inset-y-0 left-0 overflow-hidden rounded-full bg-gradient-to-r from-white/45 via-white/75 to-white/95 shadow-[0_0_10px_rgba(255,255,255,0.7)]"
+          className="absolute inset-y-0 left-0 overflow-hidden rounded-full bg-current"
           style={{ width: `${fraction * 100}%` }}
         >
           {animated ? (
-            <span className="absolute inset-y-0 left-0 w-1/3 animate-sheen bg-gradient-to-r from-transparent via-[rgba(150,120,255,0.9)] to-transparent" />
+            <span className="absolute inset-y-0 left-0 w-1/3 animate-sheen bg-gradient-to-r from-transparent via-white/70 to-transparent" />
           ) : null}
         </div>
       </div>

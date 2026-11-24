@@ -27,12 +27,12 @@ export async function requestMagicLink(_previous: LoginState, formData: FormData
     .toLowerCase();
 
   if (!EMAIL_PATTERN.test(email)) {
-    return { status: "error", email, message: "Введи корректный e-mail." };
+    return { status: "error", email, message: "Enter a valid email." };
   }
 
   const owner = process.env.OWNER_EMAIL?.trim().toLowerCase();
   if (owner && email !== owner) {
-    return { status: "error", email, message: "Это личный архив: вход только для владельца." };
+    return { status: "error", email, message: "This is a private archive: only the owner can sign in." };
   }
 
   const next = safeNext(formData.get("next"));
@@ -48,10 +48,10 @@ export async function requestMagicLink(_previous: LoginState, formData: FormData
   if (error) {
     const message =
       error.status === 429
-        ? "Слишком много писем подряд. Подожди немного и попробуй снова."
+        ? "Too many emails in a row. Wait a bit and try again."
         : /single-user|sign-ups are closed|signups not allowed|database error/i.test(error.message)
-          ? "Это личный архив: вход только для владельца."
-          : `Не получилось отправить письмо: ${error.message}`;
+          ? "This is a private archive: only the owner can sign in."
+          : `Could not send the email: ${error.message}`;
     return { status: "error", email, message };
   }
 
@@ -63,7 +63,7 @@ export async function requestMagicLink(_previous: LoginState, formData: FormData
   return {
     status: "sent",
     email,
-    message: "Письмо отправлено. Открой ссылку из него или введи 6-значный код.",
+    message: "Email sent. Open the link in it or enter the 6-digit code.",
   };
 }
 
@@ -74,14 +74,14 @@ export async function verifyCode(_previous: LoginState, formData: FormData): Pro
   const token = String(formData.get("code") ?? "").replace(/\D/g, "");
 
   if (token.length < 6) {
-    return { status: "sent", email, message: "Код из письма — 6 цифр." };
+    return { status: "sent", email, message: "The code from the email has 6 digits." };
   }
 
   const supabase = await createClient();
   const { error } = await supabase.auth.verifyOtp({ email, token, type: "email" });
 
   if (error) {
-    return { status: "sent", email, message: "Код не подошёл или истёк. Запроси новое письмо." };
+    return { status: "sent", email, message: "The code is wrong or expired. Request a new email." };
   }
 
   (await cookies()).delete(NEXT_COOKIE);

@@ -23,7 +23,7 @@ export function PostGrid({ posts, onOpen }: PostGridProps) {
   return (
     <ul className="grid grid-cols-3 gap-1 md:gap-2">
       {posts.map((post) => {
-        const label = `${post.media_type === "video" ? "Видео" : "Фото"} от ${formatDate(post.created_at)}${post.caption ? `: ${post.caption.slice(0, 80)}` : ""}`;
+        const label = `${post.media_type === "video" ? "Video" : "Photo"} from ${formatDate(post.created_at)}${post.caption ? `: ${post.caption.slice(0, 80)}` : ""}`;
         return (
           <li key={post.id}>
             <Link
@@ -31,7 +31,7 @@ export function PostGrid({ posts, onOpen }: PostGridProps) {
               scroll={false}
               onClick={onClick(post)}
               aria-label={label}
-              className="group relative block aspect-square overflow-hidden rounded-xl bg-white/[0.06] md:rounded-2xl"
+              className="group relative block aspect-square overflow-hidden rounded-xl bg-black/[0.06] md:rounded-2xl"
             >
               {/* eslint-disable-next-line @next/next/no-img-element -- private media behind a signed redirect */}
               <img

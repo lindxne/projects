@@ -5,7 +5,7 @@ import { GlassLink } from "@/components/glass/GlassButton";
 import { ArrowLeftIcon } from "@/components/ui/icons";
 import { getPost } from "@/lib/data/queries";
 
-export const metadata: Metadata = { title: "Пост" };
+export const metadata: Metadata = { title: "Post" };
 
 export default async function PostPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -14,8 +14,8 @@ export default async function PostPage({ params }: { params: Promise<{ id: strin
 
   return (
     <div className="mx-auto grid w-full max-w-2xl gap-3">
-      <GlassLink href="/archive" variant="ghost" className="!min-h-[40px] w-fit !px-3.5">
-        <ArrowLeftIcon size={17} /> Архив
+      <GlassLink href="/" variant="ghost" className="!min-h-[40px] w-fit !px-3.5">
+        <ArrowLeftIcon size={17} /> Feed
       </GlassLink>
       <StandalonePost post={post} />
     </div>

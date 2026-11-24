@@ -13,13 +13,13 @@ export function UploadProgress({ label, fraction }: { label: string; fraction: n
         aria-valuemin={0}
         aria-valuemax={100}
         aria-valuenow={percent ?? undefined}
-        className="relative mt-2.5 h-2 overflow-hidden rounded-full bg-white/10 shadow-[inset_0_1px_2px_rgba(0,0,0,0.55),0_1px_0_rgba(255,255,255,0.22)]"
+        className="relative mt-2.5 h-2 overflow-hidden rounded-full bg-black/10"
       >
         {percent === null ? (
-          <span className="absolute inset-y-0 w-1/3 animate-sheen rounded-full bg-white/80" />
+          <span className="absolute inset-y-0 w-1/3 animate-sheen rounded-full bg-black/80" />
         ) : (
           <span
-            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-white/70 to-white transition-[width] duration-200"
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-neutral-700 to-neutral-900 transition-[width] duration-200"
             style={{ width: `${percent}%` }}
           />
         )}

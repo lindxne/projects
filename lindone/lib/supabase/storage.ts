@@ -40,7 +40,7 @@ export const MAX_UPLOAD_MB = Number(process.env.NEXT_PUBLIC_MAX_UPLOAD_MB ?? "50
 export function assertUploadSize(file: Blob, label: string, maxMb: number = MAX_UPLOAD_MB): void {
   if (file.size > maxMb * 1024 * 1024) {
     const sizeMb = (file.size / 1024 / 1024).toFixed(1);
-    throw new UploadError(`${label}: файл ${sizeMb} МБ больше лимита ${maxMb} МБ.`, "size");
+    throw new UploadError(`${label}: ${sizeMb} MB is over the ${maxMb} MB limit.`, "size");
   }
 }
 
@@ -88,13 +88,13 @@ export async function uploadFile({
   onProgress,
   signal,
 }: UploadOptions): Promise<string> {
-  if (signal?.aborted) throw new UploadError("Загрузка отменена.", "network");
+  if (signal?.aborted) throw new UploadError("Upload cancelled.", "network");
   const supabase = createClient();
   const {
     data: { session },
   } = await supabase.auth.getSession();
   if (!session) {
-    throw new UploadError("Сессия истекла — войди заново и повтори загрузку.", "auth");
+    throw new UploadError("Session expired — sign in again and retry the upload.", "auth");
   }
 
   const now = new Date();
@@ -127,12 +127,12 @@ export async function uploadFile({
       }
       reject(toUploadError(xhr.status, xhr.responseText));
     };
-    xhr.onerror = () => interrupted("Сеть оборвалась во время загрузки. Проверь соединение и повтори.");
-    xhr.ontimeout = () => interrupted("Загрузка заняла слишком много времени. Повтори попытку.");
-    xhr.onabort = () => interrupted("Загрузка отменена.");
+    xhr.onerror = () => interrupted("The network dropped during upload. Check your connection and retry.");
+    xhr.ontimeout = () => interrupted("The upload took too long. Please retry.");
+    xhr.onabort = () => interrupted("Upload cancelled.");
 
     if (signal?.aborted) {
-      reject(new UploadError("Загрузка отменена.", "network"));
+      reject(new UploadError("Upload cancelled.", "network"));
       return;
     }
     signal?.addEventListener("abort", () => xhr.abort(), { once: true });
@@ -169,15 +169,15 @@ function toUploadError(status: number, body: string): UploadError {
   }
 
   if (status === 413 || /exceeded the maximum allowed size/i.test(detail)) {
-    return new UploadError("Файл больше лимита хранилища Supabase для этого проекта.", "size");
+    return new UploadError("The file exceeds this project's Supabase storage limit.", "size");
   }
   if (status === 415 || /mime type .* is not supported/i.test(detail)) {
-    return new UploadError("Этот формат файла хранилище не принимает.", "format");
+    return new UploadError("Storage does not accept this file format.", "format");
   }
   if (status === 401 || status === 403 || /row-level security|unauthorized|jwt/i.test(detail)) {
-    return new UploadError("Нет доступа к хранилищу — войди заново.", "auth");
+    return new UploadError("No access to storage — sign in again.", "auth");
   }
-  return new UploadError(`Хранилище ответило ошибкой ${status}${detail ? `: ${detail}` : ""}.`, "server");
+  return new UploadError(`Storage error ${status}${detail ? `: ${detail}` : ""}.`, "server");
 }
 
 /** Best-effort removal of uploaded files (used to roll back a failed save). */

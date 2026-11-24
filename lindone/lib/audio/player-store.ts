@@ -71,13 +71,13 @@ function dedupe(tracks: PlayerTrack[]): PlayerTrack[] {
 function describeMediaError(code: number | undefined): string {
   switch (code) {
     case 2:
-      return "Сеть оборвалась во время воспроизведения. Проверь соединение и нажми play ещё раз.";
+      return "The network dropped during playback. Check your connection and press play again.";
     case 3:
-      return "Файл повреждён или не декодируется этим браузером.";
+      return "The file is corrupted or this browser cannot decode it.";
     case 4:
-      return "Аудио недоступно: файл удалён, сессия истекла или формат не поддерживается.";
+      return "Audio unavailable: the file was deleted, the session expired or the format is not supported.";
     default:
-      return "Не получилось воспроизвести трек.";
+      return "Could not play the track.";
   }
 }
 
@@ -108,7 +108,7 @@ export const usePlayer = create<PlayerState>()(
         audio.play().catch((error: unknown) => {
           if (error instanceof DOMException && error.name === "AbortError") return;
           if (error instanceof DOMException && error.name === "NotAllowedError") {
-            set({ isPlaying: false, isLoading: false, error: "Браузер запретил автозапуск — нажми play." });
+            set({ isPlaying: false, isLoading: false, error: "The browser blocked autoplay — press play." });
             return;
           }
           // Anything else is reported by the element's `error` event.

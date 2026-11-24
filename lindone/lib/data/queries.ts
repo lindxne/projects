@@ -28,7 +28,7 @@ export async function listReleases(options: { type?: ReleaseType; ascending?: bo
   const { data, error } = await query
     .order("release_date", { ascending, nullsFirst: false })
     .order("created_at", { ascending });
-  if (error) throw new DataError("Не удалось загрузить релизы", error);
+  if (error) throw new DataError("Could not load releases", error);
   return data.map(toRelease);
 }
 
@@ -46,10 +46,10 @@ export async function getRelease(id: string): Promise<{ release: Release; tracks
   if (releaseResult.error) {
     // An id that is not a UUID is simply "not found".
     if (releaseResult.error.code === "22P02") return null;
-    throw new DataError("Не удалось загрузить релиз", releaseResult.error);
+    throw new DataError("Could not load the release", releaseResult.error);
   }
   if (!releaseResult.data) return null;
-  if (tracksResult.error) throw new DataError("Не удалось загрузить треки", tracksResult.error);
+  if (tracksResult.error) throw new DataError("Could not load tracks", tracksResult.error);
   return { release: toRelease(releaseResult.data), tracks: tracksResult.data };
 }
 
@@ -58,7 +58,7 @@ export async function getPost(id: string): Promise<Post | null> {
   const { data, error } = await supabase.from("posts").select(POST_COLUMNS).eq("id", id).maybeSingle();
   if (error) {
     if (error.code === "22P02") return null;
-    throw new DataError("Не удалось загрузить пост", error);
+    throw new DataError("Could not load the post", error);
   }
   return data ? toPost(data) : null;
 }
@@ -75,6 +75,6 @@ export async function listPostsFor(filter: { releaseId?: string; trackIds?: stri
     .or(conditions.join(","))
     .order("created_at", { ascending: false })
     .limit(60);
-  if (error) throw new DataError("Не удалось загрузить связанные посты", error);
+  if (error) throw new DataError("Could not load linked posts", error);
   return data.map(toPost);
 }

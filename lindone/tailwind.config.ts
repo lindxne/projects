@@ -9,14 +9,15 @@ const config: Config = {
         display: ["var(--font-display)", "var(--font-body)", "system-ui", "sans-serif"],
       },
       colors: {
+        // Page background (near-white) and text (near-black).
         ink: {
-          DEFAULT: "#07060d",
-          soft: "#100e1c",
+          DEFAULT: "#fafaf9",
+          soft: "#f2f2f0",
         },
         mist: {
-          DEFAULT: "rgba(250, 248, 255, 0.94)",
-          muted: "rgba(240, 236, 255, 0.78)",
-          faint: "rgba(236, 232, 255, 0.66)",
+          DEFAULT: "#111113",
+          muted: "#5b5b63",
+          faint: "#8b8b93",
         },
         glow: {
           violet: "#7a45ff",

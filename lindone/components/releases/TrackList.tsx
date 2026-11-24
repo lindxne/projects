@@ -32,7 +32,7 @@ export function ReleaseActions({ release, tracks }: TrackListProps) {
         onClick={() => (playingHere ? toggle() : playQueue(playerTracks))}
       >
         {active ? <PauseIcon size={18} /> : <PlayIcon size={18} />}
-        {active ? "Пауза" : "Слушать"}
+        {active ? "Pause" : "Play"}
       </GlassButton>
       {tracks.length > 1 ? (
         <GlassButton
@@ -43,7 +43,7 @@ export function ReleaseActions({ release, tracks }: TrackListProps) {
             playQueue(playerTracks, first?.id);
           }}
         >
-          <ShuffleIcon size={17} /> Вперемешку
+          <ShuffleIcon size={17} /> Shuffle
         </GlassButton>
       ) : null}
     </div>
@@ -58,7 +58,7 @@ export function TrackList({ release, tracks }: TrackListProps) {
   const enqueue = usePlayer((state) => state.enqueue);
 
   if (tracks.length === 0) {
-    return <p className="px-2 py-6 text-center text-mist-muted">В этом релизе пока нет треков.</p>;
+    return <p className="px-2 py-6 text-center text-mist-muted">No tracks in this release yet.</p>;
   }
 
   const playerTracks = tracks.map((track) => toPlayerTrack(track, release));
@@ -68,19 +68,19 @@ export function TrackList({ release, tracks }: TrackListProps) {
       {tracks.map((track, index) => {
         const isCurrent = track.id === currentId;
         const playerTrack = playerTracks[index];
-        const details = [track.bpm ? `${track.bpm} BPM` : null, track.musical_key].filter(Boolean).join(" · ");
+        const details = [track.bpm ? `${track.bpm} BPM` : null, track.musical_key].filter(Boolean).join(" ·");
         return (
           <li
             key={track.id}
             className={cx(
               "flex items-center gap-1 rounded-2xl border pr-1 transition-colors",
-              isCurrent ? "glass-lit border-transparent" : "border-transparent hover:bg-white/[0.08]",
+              isCurrent ? "glass-lit border-transparent" : "border-transparent hover:bg-black/[0.08]",
             )}
           >
             <button
               type="button"
               onClick={() => (isCurrent ? toggle() : playQueue(playerTracks, track.id))}
-              aria-label={`${isCurrent && isPlaying ? "Пауза" : "Играть"}: ${track.title}`}
+              aria-label={`${isCurrent && isPlaying ? "Pause" : "Play"}: ${track.title}`}
               className="flex min-h-[56px] min-w-0 flex-1 items-center gap-3 rounded-2xl px-2 text-left"
             >
               <span className="grid h-9 w-9 flex-none place-items-center text-sm tabular-nums text-mist-muted">
@@ -100,7 +100,7 @@ export function TrackList({ release, tracks }: TrackListProps) {
                 )}
               </span>
               <span className="min-w-0 flex-1">
-                <span className="glass-text block truncate font-semibold text-white">{track.title}</span>
+                <span className="block truncate font-semibold text-mist">{track.title}</span>
                 {details ? <span className="block truncate text-xs text-mist-muted">{details}</span> : null}
               </span>
               <span className="flex-none text-sm tabular-nums text-mist-muted">{formatDuration(track.duration_sec)}</span>
@@ -108,9 +108,9 @@ export function TrackList({ release, tracks }: TrackListProps) {
             <button
               type="button"
               onClick={() => playerTrack && enqueue([playerTrack])}
-              aria-label={`Добавить в очередь: ${track.title}`}
-              title="В очередь"
-              className="grid h-11 w-11 flex-none place-items-center rounded-full text-mist-muted hover:bg-white/10 hover:text-white"
+              aria-label={`Add to queue: ${track.title}`}
+              title="Add to queue"
+              className="grid h-11 w-11 flex-none place-items-center rounded-full text-mist-muted hover:bg-black/10 hover:text-mist"
             >
               <ListAddIcon size={18} />
             </button>

@@ -70,7 +70,7 @@ export function InstallPrompt() {
     <AnimatePresence>
       {visible ? (
         <motion.aside
-          aria-label="Установка приложения"
+          aria-label="Install app"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           exit={{ opacity: 0, y: 30 }}
@@ -80,19 +80,19 @@ export function InstallPrompt() {
         >
           <p className="min-w-0 flex-1 text-sm text-mist">
             {installEvent ? (
-              "Lindone можно установить как приложение."
+              "Install Lindone as an app."
             ) : (
               <>
-                Чтобы установить: «Поделиться» → <strong>«На экран Домой»</strong>.
+                To install: Share → <strong>Add to Home Screen</strong>.
               </>
             )}
           </p>
           {installEvent ? (
             <GlassButton variant="primary" className="!min-h-[40px] !px-4" onClick={() => void install()}>
-              Установить
+              Install
             </GlassButton>
           ) : null}
-          <button type="button" onClick={dismiss} aria-label="Скрыть" className="grid h-10 w-10 flex-none place-items-center rounded-full text-mist-muted hover:text-white">
+          <button type="button" onClick={dismiss} aria-label="Dismiss" className="grid h-10 w-10 flex-none place-items-center rounded-full text-mist-muted hover:text-mist">
             <CloseIcon size={16} />
           </button>
         </motion.aside>

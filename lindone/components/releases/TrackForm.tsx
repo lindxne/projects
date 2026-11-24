@@ -39,8 +39,8 @@ export const MUSICAL_KEYS = [
 export function TrackForm({ draft, index, total, disabled, onChange, onMove, onRemove }: TrackFormProps) {
   const id = `track-${draft.key}`;
   const source = draft.file
-    ? `${draft.file.name} · ${(draft.file.size / 1024 / 1024).toFixed(1)} МБ`
-    : "Файл уже загружен";
+    ? `${draft.file.name} · ${(draft.file.size / 1024 / 1024).toFixed(1)} MB`
+    : "File already uploaded";
 
   return (
     <li className="glass-inset rounded-3xl p-3">
@@ -50,20 +50,20 @@ export function TrackForm({ draft, index, total, disabled, onChange, onMove, onR
         </span>
         <div className="min-w-0 flex-1">
           <label htmlFor={`${id}-title`} className="sr-only">
-            Название трека {index + 1}
+            Track {index + 1} title
           </label>
           <input
             id={`${id}-title`}
             className="glass-input"
             value={draft.title}
             onChange={(event) => onChange({ title: event.target.value })}
-            placeholder="Название трека"
+            placeholder="Track title"
             maxLength={200}
             required
             disabled={disabled}
           />
           <p className="mt-1.5 truncate px-1 text-xs text-mist-muted">
-            {source} · {draft.reading ? "читаю длительность…" : formatDuration(draft.duration)}
+            {source} · {draft.reading ? "reading duration…" : formatDuration(draft.duration)}
           </p>
         </div>
         <div className="flex flex-none flex-col">
@@ -71,8 +71,8 @@ export function TrackForm({ draft, index, total, disabled, onChange, onMove, onR
             type="button"
             onClick={() => onMove(-1)}
             disabled={disabled || index === 0}
-            aria-label={`Поднять трек ${index + 1} выше`}
-            className="grid h-7 w-10 place-items-center rounded-lg text-mist-muted hover:text-white disabled:opacity-30"
+            aria-label={`Move track ${index + 1} up`}
+            className="grid h-7 w-10 place-items-center rounded-lg text-mist-muted hover:text-mist disabled:opacity-30"
           >
             <ChevronUpIcon size={16} />
           </button>
@@ -80,8 +80,8 @@ export function TrackForm({ draft, index, total, disabled, onChange, onMove, onR
             type="button"
             onClick={() => onMove(1)}
             disabled={disabled || index === total - 1}
-            aria-label={`Опустить трек ${index + 1} ниже`}
-            className="grid h-7 w-10 place-items-center rounded-lg text-mist-muted hover:text-white disabled:opacity-30"
+            aria-label={`Move track ${index + 1} down`}
+            className="grid h-7 w-10 place-items-center rounded-lg text-mist-muted hover:text-mist disabled:opacity-30"
           >
             <ChevronDownIcon size={16} />
           </button>
@@ -105,9 +105,7 @@ export function TrackForm({ draft, index, total, disabled, onChange, onMove, onR
           />
         </div>
         <div className="w-28">
-          <label htmlFor={`${id}-key`} className="field-label !mb-1 !text-xs">
-            Тональность
-          </label>
+          <label htmlFor={`${id}-key`} className="field-label !mb-1 !text-xs">Key</label>
           <input
             id={`${id}-key`}
             className="glass-input !py-2.5"
@@ -123,15 +121,15 @@ export function TrackForm({ draft, index, total, disabled, onChange, onMove, onR
           type="button"
           onClick={onRemove}
           disabled={disabled}
-          aria-label={`Удалить трек ${index + 1}${draft.title ? `: ${draft.title}` : ""}`}
-          className="ml-auto grid h-11 w-11 flex-none place-items-center rounded-full text-rose-200 hover:bg-rose-500/15 disabled:opacity-40"
+          aria-label={`Remove track ${index + 1}${draft.title ? `: ${draft.title}` : ""}`}
+          className="ml-auto grid h-11 w-11 flex-none place-items-center rounded-full text-rose-600 hover:bg-rose-500/15 disabled:opacity-40"
         >
           <TrashIcon size={18} />
         </button>
       </div>
 
       {draft.error ? (
-        <p role="alert" className="mt-2 pl-10 text-sm text-rose-200">
+        <p role="alert" className="mt-2 pl-10 text-sm text-rose-600">
           {draft.error}
         </p>
       ) : null}

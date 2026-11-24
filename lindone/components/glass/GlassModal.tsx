@@ -6,7 +6,6 @@ import { createPortal } from "react-dom";
 import { CloseIcon } from "@/components/ui/icons";
 import { cx } from "@/lib/utils/format";
 import { lockScroll } from "@/lib/utils/scroll-lock";
-import { GlassLens } from "./GlassLens";
 
 interface GlassModalProps {
   open: boolean;
@@ -91,7 +90,7 @@ export function GlassModal({
           <motion.div
             // Plain dimming: a full-screen backdrop-filter under the glass panel's own one
             // makes Chrome mirror the page at the edges, and costs a lot on phones.
-            className="absolute inset-0 bg-black/50"
+            className="absolute inset-0 bg-black/25"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -115,16 +114,15 @@ export function GlassModal({
               className,
             )}
           >
-            <GlassLens tier="desktop" radius={28} />
             <div className={hideTitle ? "sr-only" : "relative flex items-center justify-between gap-4 px-5 pb-2 pt-4"}>
-              <h2 id={titleId} className="text-lg font-bold text-white">
+              <h2 id={titleId} className="text-lg font-bold text-mist">
                 {title}
               </h2>
             </div>
             <button
               type="button"
               onClick={onClose}
-              aria-label="Закрыть"
+              aria-label="Close"
               className="scrim absolute right-3 top-3 z-10 grid h-10 w-10 place-items-center rounded-full text-white"
             >
               <CloseIcon size={18} />

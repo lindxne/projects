@@ -23,15 +23,15 @@ export const RELEASE_TYPES = ["single", "mixtape", "album"] as const;
 export type ReleaseType = (typeof RELEASE_TYPES)[number];
 
 export const RELEASE_TYPE_LABEL: Record<ReleaseType, string> = {
-  single: "Сингл",
-  mixtape: "Микстейп",
-  album: "Альбом",
+  single: "Single",
+  mixtape: "Mixtape",
+  album: "Album",
 };
 
 export const RELEASE_TYPE_LABEL_PLURAL: Record<ReleaseType, string> = {
-  single: "Синглы",
-  mixtape: "Микстейпы",
-  album: "Альбомы",
+  single: "Singles",
+  mixtape: "Mixtapes",
+  album: "Albums",
 };
 
 export function isReleaseType(value: unknown): value is ReleaseType {
@@ -55,11 +55,11 @@ export const POST_TAGS = ["studio", "live", "demo", "reference", "vibe"] as cons
 export type PostTag = (typeof POST_TAGS)[number];
 
 export const POST_TAG_LABEL: Record<PostTag, string> = {
-  studio: "студия",
-  live: "лайв",
-  demo: "демо",
-  reference: "референс",
-  vibe: "вайб",
+  studio: "studio",
+  live: "live",
+  demo: "demo",
+  reference: "reference",
+  vibe: "vibe",
 };
 
 export function isPostTag(value: unknown): value is PostTag {

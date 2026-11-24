@@ -6,7 +6,7 @@ import { GlassButton } from "@/components/glass/GlassButton";
 import { GlassModal } from "@/components/glass/GlassModal";
 import { CloseIcon, GripIcon } from "@/components/ui/icons";
 import { usePlayer, type PlayerTrack } from "@/lib/audio/player-store";
-import { cx, formatDuration, pluralRu } from "@/lib/utils/format";
+import { cx, formatDuration, plural } from "@/lib/utils/format";
 
 function QueueRow({ track, index, total }: { track: PlayerTrack; index: number; total: number }) {
   const controls = useDragControls();
@@ -43,12 +43,12 @@ function QueueRow({ track, index, total }: { track: PlayerTrack; index: number; 
       whileDrag={{ scale: 1.03, boxShadow: "0 18px 40px -16px rgba(0,0,0,0.9)" }}
       className={cx(
         "flex items-center gap-1 rounded-2xl border px-1.5 py-1",
-        isCurrent ? "border-white/40 bg-white/15" : "border-transparent bg-black/25",
+        isCurrent ? "border-black/40 bg-black/15" : "border-transparent bg-black/25",
       )}
     >
       <button
         type="button"
-        aria-label={`Переместить «${track.title}» (позиция ${index + 1} из ${total}): тяни или стрелки вверх/вниз`}
+        aria-label={`Move “${track.title}” (position ${index + 1} of ${total}): drag or use up/down arrows`}
         onPointerDown={(event) => controls.start(event)}
         onKeyDown={onHandleKeyDown}
         className="grid h-11 w-9 flex-none cursor-grab touch-none place-items-center rounded-xl text-mist-faint active:cursor-grabbing"
@@ -64,18 +64,18 @@ function QueueRow({ track, index, total }: { track: PlayerTrack; index: number; 
         {/* eslint-disable-next-line @next/next/no-img-element -- private media behind a signed redirect */}
         <img src={track.coverUrl} alt="" width={40} height={40} loading="lazy" className="h-10 w-10 flex-none rounded-lg object-cover" />
         <span className="min-w-0 flex-1">
-          <span className="block truncate text-sm font-semibold text-white">{track.title}</span>
+          <span className="block truncate text-sm font-semibold text-mist">{track.title}</span>
           <span className="block truncate text-xs text-mist-muted">
-            {isCurrent ? (isPlaying ? "Сейчас играет" : "На паузе") : track.releaseTitle}
+            {isCurrent ? (isPlaying ? "Now playing" : "Paused") : track.releaseTitle}
           </span>
         </span>
         <span className="flex-none text-xs tabular-nums text-mist-muted">{formatDuration(track.duration)}</span>
       </button>
       <button
         type="button"
-        aria-label={`Убрать «${track.title}» из очереди`}
+        aria-label={`Remove “${track.title}” from queue`}
         onClick={() => removeFromQueue(track.id)}
-        className="grid h-11 w-10 flex-none place-items-center rounded-xl text-mist-muted hover:bg-white/10 hover:text-white"
+        className="grid h-11 w-10 flex-none place-items-center rounded-xl text-mist-muted hover:bg-black/10 hover:text-mist"
       >
         <CloseIcon size={16} />
       </button>
@@ -92,20 +92,20 @@ export function QueueModal() {
   const clearQueue = usePlayer((state) => state.clearQueue);
 
   return (
-    <GlassModal open={open} onClose={() => setQueueOpen(false)} title="Очередь">
+    <GlassModal open={open} onClose={() => setQueueOpen(false)} title="Queue">
       <div className="px-3 pb-4">
         {queue.length === 0 ? (
           <p className="px-2 py-10 text-center text-mist-muted">
-            Очередь пуста. Нажми play на релизе или добавь трек кнопкой «в очередь».
+            Queue is empty. Press play on a release or add a track to the queue.
           </p>
         ) : (
           <>
             <div className="flex items-center justify-between px-2 pb-2">
               <p className="text-sm text-mist-muted">
-                {queue.length} {pluralRu(queue.length, "трек", "трека", "треков")}
+                {queue.length} {plural(queue.length, "track")}
               </p>
               <GlassButton variant="ghost" className="!min-h-[36px] !px-3.5 text-xs" onClick={clearQueue}>
-                Очистить
+                Clear
               </GlassButton>
             </div>
             <Reorder.Group
@@ -113,7 +113,7 @@ export function QueueModal() {
               values={queue.map((track) => track.id)}
               onReorder={reorderQueue}
               className="flex flex-col gap-1.5"
-              aria-label="Треки в очереди"
+              aria-label="Tracks in queue"
             >
               {queue.map((track, index) => (
                 <QueueRow key={track.id} track={track} index={index} total={queue.length} />

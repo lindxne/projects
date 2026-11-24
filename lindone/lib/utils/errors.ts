@@ -18,17 +18,17 @@ export class SaveError extends Error {
 export function describeDbError(error: DbErrorLike): string {
   const { code, message } = error;
   if (/failed to fetch|networkerror|load failed/i.test(message)) {
-    return "Нет соединения с сервером. Проверь интернет и повтори.";
+    return "No connection to the server. Check your internet and retry.";
   }
   if (code === "42501" || /row-level security/i.test(message)) {
-    return "Нет прав на запись. Сессия могла истечь — войди заново.";
+    return "No write permission. Your session may have expired — sign in again.";
   }
   if (code === "PGRST301" || /jwt/i.test(message)) {
-    return "Сессия истекла. Войди заново и повтори.";
+    return "Session expired. Sign in again and retry.";
   }
-  if (code === "23503") return "Связанная запись уже удалена. Обнови страницу.";
-  if (code === "23514") return "База отклонила данные: значение вне допустимого набора.";
-  return `База данных ответила ошибкой: ${message}`;
+  if (code === "23503") return "The linked item was already deleted. Refresh the page.";
+  if (code === "23514") return "The database rejected the data: value out of range.";
+  return `Database error: ${message}`;
 }
 
 /** A user-facing message for anything thrown during an upload / save flow. */
@@ -43,9 +43,9 @@ export function describeError(error: unknown): string {
   }
   if (error instanceof Error) {
     if (/failed to fetch|networkerror|load failed/i.test(error.message)) {
-      return "Нет соединения с сервером. Проверь интернет и повтори.";
+      return "No connection to the server. Check your internet and retry.";
     }
     return error.message;
   }
-  return "Что-то пошло не так. Повтори попытку.";
+  return "Something went wrong. Please try again.";
 }

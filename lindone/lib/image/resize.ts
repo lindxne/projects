@@ -30,7 +30,7 @@ async function decode(file: Blob): Promise<{ source: CanvasImageSource; width: n
     await image.decode();
     return { source: image, width: image.naturalWidth, height: image.naturalHeight, close: () => undefined };
   } catch {
-    throw new ImageError("Не получилось прочитать изображение. Попробуй JPEG, PNG или WebP.");
+    throw new ImageError("Could not read the image. Try JPEG, PNG or WebP.");
   } finally {
     URL.revokeObjectURL(url);
   }
@@ -47,13 +47,13 @@ async function render(
 ): Promise<ResizedImage> {
   const image = await decode(file);
   try {
-    if (image.width === 0 || image.height === 0) throw new ImageError("Изображение пустое.");
+    if (image.width === 0 || image.height === 0) throw new ImageError("The image is empty.");
     const { sx, sy, sw, sh, dw, dh } = layout(image.width, image.height);
     const canvas = document.createElement("canvas");
     canvas.width = dw;
     canvas.height = dh;
     const context = canvas.getContext("2d");
-    if (!context) throw new ImageError("Браузер не дал обработать изображение.");
+    if (!context) throw new ImageError("The browser could not process the image.");
     context.imageSmoothingQuality = "high";
     context.drawImage(image.source, sx, sy, sw, sh, 0, 0, dw, dh);
 
@@ -62,7 +62,7 @@ async function render(
       return { blob: webp, contentType: "image/webp", width: dw, height: dh };
     }
     const jpeg = await encode(canvas, "image/jpeg", quality);
-    if (!jpeg) throw new ImageError("Браузер не смог сжать изображение.");
+    if (!jpeg) throw new ImageError("The browser could not compress the image.");
     return { blob: jpeg, contentType: "image/jpeg", width: dw, height: dh };
   } finally {
     image.close();

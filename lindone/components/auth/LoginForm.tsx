@@ -39,19 +39,19 @@ export function LoginForm({ next, initialError }: { next: string; initialError?:
         <button
           type="submit"
           disabled={linkPending}
-          className="glass glass-pill glass-lit w-full px-6 py-3.5 text-base font-semibold text-white transition active:scale-[0.98] disabled:opacity-60"
+          className="glass glass-pill glass-lit w-full px-6 py-3.5 text-base font-semibold text-mist transition active:scale-[0.98] disabled:opacity-60"
         >
-          {linkPending ? "Отправляю…" : sent ? "Отправить ещё раз" : "Получить ссылку для входа"}
+          {linkPending ? "Sending…" : sent ? "Send again" : "Email me a sign-in link"}
         </button>
       </form>
 
       {sent ? (
-        <form action={submitCode} className="space-y-4 border-t border-white/10 pt-5" noValidate>
+        <form action={submitCode} className="space-y-4 border-t border-black/10 pt-5" noValidate>
           <input type="hidden" name="next" value={next} />
           <input type="hidden" name="email" value={linkState.email} />
           <div>
             <label htmlFor="code" className="field-label">
-              Код из письма
+              Code from the email
             </label>
             <input
               id="code"
@@ -68,9 +68,9 @@ export function LoginForm({ next, initialError }: { next: string; initialError?:
           <button
             type="submit"
             disabled={codePending}
-            className="w-full rounded-full border border-white/40 px-6 py-3 text-base font-semibold text-white transition active:scale-[0.98] disabled:opacity-60"
+            className="w-full rounded-full border border-black/40 px-6 py-3 text-base font-semibold text-mist transition active:scale-[0.98] disabled:opacity-60"
           >
-            {codePending ? "Проверяю…" : "Войти по коду"}
+            {codePending ? "Checking…" : "Sign in with code"}
           </button>
         </form>
       ) : null}
@@ -79,7 +79,7 @@ export function LoginForm({ next, initialError }: { next: string; initialError?:
         id="login-status"
         role="status"
         aria-live="polite"
-        className={`min-h-[1.5rem] text-sm ${isError ? "text-rose-200" : "text-mist-muted"}`}
+        className={`min-h-[1.5rem] text-sm ${isError ? "text-rose-600" : "text-mist-muted"}`}
       >
         {message}
       </p>

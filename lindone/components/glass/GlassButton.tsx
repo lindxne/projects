@@ -8,17 +8,17 @@ import { cx } from "@/lib/utils/format";
 type Variant = "primary" | "glass" | "ghost" | "danger";
 
 const VARIANT_CLASS: Record<Variant, string> = {
-  primary: "glass glass-pill glass-lit text-white",
-  glass: "glass glass-pill text-white",
-  ghost: "chip text-white hover:brightness-125",
-  danger: "glass glass-pill text-rose-100 [--glass-tint:rgba(120,16,48,0.42)]",
+  primary: "glass glass-pill glass-lit text-mist",
+  glass: "glass glass-pill text-mist",
+  ghost: "chip text-mist hover:brightness-125",
+  danger: "glass glass-pill text-rose-600 [--glass-tint:rgba(255,228,230,0.8)]",
 };
 
 const BASE =
   "inline-flex min-h-[44px] items-center justify-center gap-2 rounded-full px-5 text-sm font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50";
 
 /** Glass lettering; icons keep their own stroke and get a glow. */
-const LABEL = "glass-text inline-flex items-center gap-2 [&_svg]:glass-icon";
+const LABEL = "inline-flex items-center gap-2";
 
 export const SPRING = { type: "spring", stiffness: 520, damping: 18, mass: 0.7 } as const;
 

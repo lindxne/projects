@@ -16,7 +16,7 @@ export function StandalonePost({ post: initial }: { post: Post }) {
         post={post}
         onUpdated={setPost}
         onDeleted={() => {
-          router.push("/archive");
+          router.push("/");
           router.refresh();
         }}
       />

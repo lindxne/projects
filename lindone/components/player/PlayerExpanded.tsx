@@ -6,6 +6,7 @@ import { useEffect, useRef } from "react";
 import { GlassSphere } from "@/components/glass/GlassSphere";
 import { ChevronDownIcon, QueueIcon } from "@/components/ui/icons";
 import { useCurrentTrack, usePlayer } from "@/lib/audio/player-store";
+import { paletteStyle, useCoverPalette } from "@/lib/color/palette";
 import { lockScroll } from "@/lib/utils/scroll-lock";
 import { CoverArt } from "./CoverArt";
 import {
@@ -21,6 +22,7 @@ import {
 /** Full-screen player for phones: opens on tap / swipe up, closes on swipe down. */
 export function PlayerExpanded() {
   const track = useCurrentTrack();
+  const palette = useCoverPalette(track?.coverUrl ?? null, track?.releaseId);
   const expanded = usePlayer((state) => state.expanded);
   const error = usePlayer((state) => state.error);
   const setExpanded = usePlayer((state) => state.setExpanded);
@@ -53,7 +55,7 @@ export function PlayerExpanded() {
           ref={panelRef}
           role="dialog"
           aria-modal="true"
-          aria-label={`Плеер: ${track.title}`}
+          aria-label={`Player: ${track.title}`}
           tabIndex={-1}
           drag="y"
           dragConstraints={{ top: 0, bottom: 0 }}
@@ -63,12 +65,12 @@ export function PlayerExpanded() {
           animate={{ y: 0 }}
           exit={{ y: "100%" }}
           transition={{ type: "spring", stiffness: 300, damping: 34, mass: 0.9 }}
-          className="glass glass-strong fixed inset-0 z-[60] flex flex-col rounded-none px-6 pb-[calc(var(--safe-bottom)+24px)] pt-[calc(var(--safe-top)+10px)] outline-none"
-          style={{ ["--glass-blur" as string]: "26px", ["--glass-radius" as string]: "0px" }}
+          className="glass player-themed fixed inset-0 z-[60] flex flex-col rounded-none px-6 pb-[calc(var(--safe-bottom)+24px)] pt-[calc(var(--safe-top)+10px)] outline-none"
+          style={{ ...paletteStyle(palette), ["--glass-blur" as string]: "26px", ["--glass-radius" as string]: "0px" }}
         >
-          <div className="mx-auto mb-2 h-1.5 w-11 flex-none rounded-full bg-white/35" aria-hidden="true" />
+          <div className="mx-auto mb-2 h-1.5 w-11 flex-none rounded-full bg-black/35" aria-hidden="true" />
           <div className="flex flex-none items-center justify-between">
-            <GlassSphere label="Свернуть плеер" size={42} onClick={() => setExpanded(false)}>
+            <GlassSphere label="Collapse player" size={42} onClick={() => setExpanded(false)}>
               <ChevronDownIcon size={20} />
             </GlassSphere>
             <Link
@@ -78,7 +80,7 @@ export function PlayerExpanded() {
             >
               {track.releaseTitle}
             </Link>
-            <GlassSphere label="Очередь" size={42} onClick={() => setQueueOpen(true)}>
+            <GlassSphere label="Queue" size={42} onClick={() => setQueueOpen(true)}>
               <QueueIcon size={18} />
             </GlassSphere>
           </div>
@@ -91,13 +93,13 @@ export function PlayerExpanded() {
               transition={{ type: "spring", stiffness: 240, damping: 22 }}
               className="aspect-square h-full max-h-[min(100%,calc(100vw-48px))] max-w-full"
             >
-              <CoverArt src={track.coverUrl} alt={`Обложка: ${track.releaseTitle}`} className="h-full w-full rounded-[32px]" depth={14} priority />
+              <CoverArt src={track.coverUrl} alt={`Cover: ${track.releaseTitle}`} className="h-full w-full rounded-[32px]" priority />
             </motion.div>
           </div>
 
           <div className="flex-none">
-            <h2 className="truncate font-display text-2xl font-bold text-white">{track.title}</h2>
-            <p className={`mt-0.5 truncate text-base ${error ? "text-rose-200" : "text-mist-muted"}`} role={error ? "alert" : undefined}>
+            <h2 className="truncate font-display text-2xl font-bold text-mist">{track.title}</h2>
+            <p className={`mt-0.5 truncate text-base ${error ? "text-rose-600" : "text-mist-muted"}`} role={error ? "alert" : undefined}>
               {error ?? "Lindone"}
             </p>
 

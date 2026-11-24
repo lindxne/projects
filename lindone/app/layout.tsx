@@ -1,16 +1,16 @@
 import type { Metadata, Viewport } from "next";
-import { Manrope, Unbounded } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 
-const body = Manrope({
-  subsets: ["latin", "cyrillic"],
+const body = Inter({
+  subsets: ["latin"],
   variable: "--font-body",
   display: "swap",
 });
 
-const display = Unbounded({
-  subsets: ["latin", "cyrillic"],
-  weight: ["500", "700"],
+const display = Inter({
+  subsets: ["latin"],
+  weight: ["500", "600", "700"],
   variable: "--font-display",
   display: "swap",
 });
@@ -18,11 +18,11 @@ const display = Unbounded({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "https://lindone.com"),
   title: { default: "Lindone", template: "%s · Lindone" },
-  description: "Lindone — дискография, визуальный архив и плеер в одном месте.",
+  description: "lindone — music, photos and videos in one place.",
   applicationName: "Lindone",
   manifest: "/manifest.json",
   robots: { index: false, follow: false },
-  appleWebApp: { capable: true, title: "Lindone", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Lindone", statusBarStyle: "default" },
   icons: {
     icon: [
       { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#07060d",
+  themeColor: "#fafaf9",
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
@@ -41,7 +41,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="ru" className={`${body.variable} ${display.variable}`}>
+    <html lang="en" className={`${body.variable} ${display.variable}`}>
       <body>{children}</body>
     </html>
   );
