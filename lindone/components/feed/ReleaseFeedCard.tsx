@@ -22,7 +22,10 @@ export function ReleaseFeedCard({ release, priority = false }: { release: Releas
   const year = yearOf(release.release_date);
 
   const play = async () => {
-    if (playingHere && isPlaying) return toggle();
+    if (playingHere) {
+      const queuedFromRelease = usePlayer.getState().queue.filter((track) => track.releaseId === release.id).length;
+      if (isPlaying || queuedFromRelease > 1) return toggle();
+    }
     setBusy(true);
     setError(null);
     try {
@@ -34,12 +37,7 @@ export function ReleaseFeedCard({ release, priority = false }: { release: Releas
         .order("created_at", { ascending: true });
       if (queryError) throw new Error(queryError.message);
       if (data.length === 0) setError("No tracks yet.");
-      else {
-        const { queue } = usePlayer.getState();
-        const queuedIds = new Set(queue.map((track) => track.id));
-        if (playingHere && data.every((track) => queuedIds.has(track.id))) toggle();
-        else playQueue(data.map((track) => toPlayerTrack(track, release)));
-      }
+      else playQueue(data.map((track) => toPlayerTrack(track, release)));
     } catch (caught) {
       setError(describeError(caught));
     } finally {
