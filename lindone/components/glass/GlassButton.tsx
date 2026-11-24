@@ -8,7 +8,7 @@ import { cx } from "@/lib/utils/format";
 type Variant = "primary" | "glass" | "ghost" | "danger";
 
 const VARIANT_CLASS: Record<Variant, string> = {
-  primary: "glass glass-pill glass-lit text-mist",
+  primary: "glass glass-pill glass-lit text-white",
   glass: "glass glass-pill text-mist",
   ghost: "chip text-mist hover:brightness-125",
   danger: "glass glass-pill text-rose-600 [--glass-tint:rgba(255,228,230,0.8)]",

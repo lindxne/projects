@@ -74,7 +74,7 @@ export function TrackList({ release, tracks }: TrackListProps) {
             key={track.id}
             className={cx(
               "flex items-center gap-1 rounded-2xl border pr-1 transition-colors",
-              isCurrent ? "glass-lit border-transparent" : "border-transparent hover:bg-black/[0.08]",
+              isCurrent ? "border-transparent bg-black/[0.06]" : "border-transparent hover:bg-black/[0.04]",
             )}
           >
             <button

@@ -39,7 +39,7 @@ export function LoginForm({ next, initialError }: { next: string; initialError?:
         <button
           type="submit"
           disabled={linkPending}
-          className="glass glass-pill glass-lit w-full px-6 py-3.5 text-base font-semibold text-mist transition active:scale-[0.98] disabled:opacity-60"
+          className="glass glass-pill glass-lit w-full px-6 py-3.5 text-base font-semibold text-white transition active:scale-[0.98] disabled:opacity-60"
         >
           {linkPending ? "Sending…" : sent ? "Send again" : "Email me a sign-in link"}
         </button>
