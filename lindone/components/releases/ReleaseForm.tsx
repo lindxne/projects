@@ -292,7 +292,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
 
       let backgroundUrl = backgroundPreview ? savedBackground.current : null;
       if (background) {
-        assertUploadSize(background.blob, "Background", 8);
+        assertUploadSize(background.blob, "Background", 5);
         setProgress({ label: "Uploading background…", fraction: totalBytes > 0 ? doneBytes / totalBytes : null });
         backgroundUrl = await uploadFile({
           bucket: "covers",
