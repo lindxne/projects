@@ -72,12 +72,12 @@ export function UnifiedFeed({ initial, filter }: { initial: FeedPage; filter: Fe
   }
 
   return (
-    <div className="mx-auto w-full max-w-[560px]">
+    <div className="mx-auto w-full max-w-[820px]">
       <ul className="grid gap-12 md:gap-16">
         {items.map((item, index) => (
-          <li key={item.id}>
+          <li key={item.id} className={item.kind === "release" ? undefined : "mx-auto w-full max-w-[560px]"}>
             {item.kind === "release" ? (
-              <ReleaseFeedCard release={item.release} priority={index === 0} />
+              <ReleaseFeedCard release={item.release} tracks={item.tracks} priority={index === 0} />
             ) : (
               <PostCard post={item.post} onOpen={setOpened} priority={index === 0} />
             )}

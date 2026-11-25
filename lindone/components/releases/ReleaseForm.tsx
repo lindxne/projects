@@ -10,7 +10,7 @@ import { UploadProgress } from "@/components/ui/UploadProgress";
 import { readAudioDuration } from "@/lib/audio/duration";
 import { AUDIO_ACCEPT, audioContentType, titleFromFileName } from "@/lib/audio/formats";
 import { usePlayer } from "@/lib/audio/player-store";
-import { resizeToSquare, type ResizedImage } from "@/lib/image/resize";
+import { resizeToMax, resizeToSquare, type ResizedImage } from "@/lib/image/resize";
 import { createClient } from "@/lib/supabase/client";
 import { MAX_UPLOAD_MB, assertUploadSize, removeMedia, uploadFile } from "@/lib/supabase/storage";
 import {
@@ -88,6 +88,10 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
   const [coverPreview, setCoverPreview] = useState<string | null>(release?.cover_url ?? null);
   const [coverBusy, setCoverBusy] = useState(false);
   const [coverError, setCoverError] = useState<string | null>(null);
+  const [background, setBackground] = useState<ResizedImage | null>(null);
+  const [backgroundPreview, setBackgroundPreview] = useState<string | null>(release?.background_url ?? null);
+  const [backgroundBusy, setBackgroundBusy] = useState(false);
+  const [backgroundError, setBackgroundError] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<TrackDraft[]>(() => tracks.map(toDraft));
   const [dragOver, setDragOver] = useState<"cover" | "audio" | null>(null);
   const [progress, setProgress] = useState<Progress | null>(null);
@@ -97,15 +101,19 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
 
   const coverInput = useRef<HTMLInputElement>(null);
   const audioInput = useRef<HTMLInputElement>(null);
+  const backgroundInput = useRef<HTMLInputElement>(null);
   const objectUrl = useRef<string | null>(null);
+  const backgroundObjectUrl = useRef<string | null>(null);
   /** What the database references right now; diverges from the props after a partly failed save. */
   const savedCover = useRef(release?.cover_url ?? null);
+  const savedBackground = useRef(release?.background_url ?? null);
   const savedTracks = useRef(tracks.map((track) => ({ id: track.id, audio_url: track.audio_url })));
   const busy = progress !== null || deleting;
 
   useEffect(
     () => () => {
       if (objectUrl.current) URL.revokeObjectURL(objectUrl.current);
+      if (backgroundObjectUrl.current) URL.revokeObjectURL(backgroundObjectUrl.current);
     },
     [],
   );
@@ -129,6 +137,33 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
     } finally {
       setCoverBusy(false);
     }
+  };
+
+  const pickBackground = async (file: File | undefined) => {
+    if (!file) return;
+    setBackgroundError(null);
+    if (!file.type.startsWith("image/") && !/\.(jpe?g|png|webp|heic|heif|avif)$/i.test(file.name)) {
+      setBackgroundError("That is not an image. Use JPEG, PNG or WebP.");
+      return;
+    }
+    setBackgroundBusy(true);
+    try {
+      const resized = await resizeToMax(file, 1800);
+      if (backgroundObjectUrl.current) URL.revokeObjectURL(backgroundObjectUrl.current);
+      backgroundObjectUrl.current = URL.createObjectURL(resized.blob);
+      setBackground(resized);
+      setBackgroundPreview(backgroundObjectUrl.current);
+    } catch (caught) {
+      setBackgroundError(describeError(caught));
+    } finally {
+      setBackgroundBusy(false);
+    }
+  };
+
+  const clearBackground = () => {
+    setBackground(null);
+    setBackgroundPreview(null);
+    setBackgroundError(null);
   };
 
   const patchDraft = (key: string, patch: Partial<TrackDraft>) =>
@@ -202,6 +237,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
     if (!title.trim()) return "Enter a release title.";
     if (!cover && !release?.cover_url) return "Add a cover — it is required.";
     if (coverBusy) return "The cover is still processing — wait a second.";
+    if (backgroundBusy) return "The background is still processing — wait a second.";
     const cleanLinks: ReleaseLinks = {};
     for (const service of STREAMING_SERVICES) {
       const url = normalizeUrl(links[service]);
@@ -234,7 +270,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
     let uploaded: string[] = [];
     let createdReleaseId: string | null = null;
     const newDrafts = drafts.filter((draft) => draft.file);
-    const totalBytes = (cover?.blob.size ?? 0) + newDrafts.reduce((sum, draft) => sum + (draft.file?.size ?? 0), 0);
+    const totalBytes = (cover?.blob.size ?? 0) + (background?.blob.size ?? 0) + newDrafts.reduce((sum, draft) => sum + (draft.file?.size ?? 0), 0);
     let doneBytes = 0;
     const report = (label: string, size: number) => (fraction: number) =>
       setProgress({ label, fraction: totalBytes > 0 ? (doneBytes + size * fraction) / totalBytes : null });
@@ -252,6 +288,20 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
         });
         uploaded.push(coverUrl);
         doneBytes += cover.blob.size;
+      }
+
+      let backgroundUrl = backgroundPreview ? savedBackground.current : null;
+      if (background) {
+        assertUploadSize(background.blob, "Background", 8);
+        setProgress({ label: "Uploading background…", fraction: totalBytes > 0 ? doneBytes / totalBytes : null });
+        backgroundUrl = await uploadFile({
+          bucket: "covers",
+          file: background.blob,
+          contentType: background.contentType,
+          onProgress: report("Uploading background…", background.blob.size),
+        });
+        uploaded.push(backgroundUrl);
+        doneBytes += background.blob.size;
       }
 
       const audioUrls = new Map<string, string>();
@@ -277,6 +327,7 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
         type,
         title: title.trim(),
         cover_url: coverUrl,
+        background_url: backgroundUrl,
         description: description.trim() || null,
         release_date: releaseDate || null,
         links: checked.cleanLinks,
@@ -294,6 +345,13 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
           savedCover.current = coverUrl;
           setCover(null);
           if (previousCover && previousCover !== coverUrl) void removeMedia([previousCover]).catch(() => undefined);
+        }
+        if (backgroundUrl !== savedBackground.current) {
+          if (backgroundUrl) uploaded = uploaded.filter((url) => url !== backgroundUrl);
+          const previousBackground = savedBackground.current;
+          savedBackground.current = backgroundUrl;
+          setBackground(null);
+          if (previousBackground) void removeMedia([previousBackground]).catch(() => undefined);
         }
         usePlayer.getState().updateRelease(release.id, { coverUrl, releaseTitle: fields.title });
       } else {
@@ -369,7 +427,11 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
       return;
     }
     usePlayer.getState().forgetTracks(tracks.map((track) => track.id));
-    await removeMedia([release.cover_url, ...tracks.map((track) => track.audio_url)]).catch(() => undefined);
+    await removeMedia([
+      savedCover.current ?? release.cover_url,
+      savedBackground.current,
+      ...tracks.map((track) => track.audio_url),
+    ]).catch(() => undefined);
     router.push("/");
     router.refresh();
   };
@@ -427,6 +489,58 @@ export function ReleaseForm({ release, tracks = [] }: ReleaseFormProps) {
         {coverError ? (
           <p id="cover-error" role="alert" className="mt-2 text-sm text-rose-600">
             {coverError}
+          </p>
+        ) : null}
+
+        <span className="field-label mt-5" id="background-label">
+          Background <span className="text-mist-faint">· optional, fills the release card</span>
+        </span>
+        <button
+          type="button"
+          aria-labelledby="background-label"
+          aria-describedby={backgroundError ? "background-error" : undefined}
+          onClick={() => backgroundInput.current?.click()}
+          onDragOver={(event) => event.preventDefault()}
+          onDrop={(event) => {
+            event.preventDefault();
+            void pickBackground(event.dataTransfer.files[0]);
+          }}
+          disabled={busy}
+          className={cx(
+            "relative grid aspect-[16/9] w-full place-items-center overflow-hidden rounded-2xl border-2 border-dashed bg-black/[0.06] transition-colors",
+            backgroundPreview ? "border-transparent" : "border-black/25",
+          )}
+        >
+          {backgroundPreview ? (
+            // eslint-disable-next-line @next/next/no-img-element -- local preview / private media
+            <img src={backgroundPreview} alt="Background preview" className="h-full w-full object-cover" />
+          ) : (
+            <span className="flex flex-col items-center gap-1.5 px-4 text-center text-mist-muted">
+              <UploadIcon size={22} />
+              <span className="text-xs">{backgroundBusy ? "Processing…" : "No image: a blurred cover is used"}</span>
+            </span>
+          )}
+        </button>
+        {backgroundPreview ? (
+          <GlassButton variant="ghost" onClick={clearBackground} disabled={busy} className="mt-2 !min-h-[36px] !px-3 text-sm">
+            <TrashIcon size={15} /> Remove background
+          </GlassButton>
+        ) : null}
+        <input
+          ref={backgroundInput}
+          type="file"
+          accept="image/*"
+          className="sr-only"
+          tabIndex={-1}
+          aria-hidden="true"
+          onChange={(event) => {
+            void pickBackground(event.target.files?.[0]);
+            event.target.value = "";
+          }}
+        />
+        {backgroundError ? (
+          <p id="background-error" role="alert" className="mt-2 text-sm text-rose-600">
+            {backgroundError}
           </p>
         ) : null}
       </GlassCard>

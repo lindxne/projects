@@ -35,6 +35,20 @@ export function formatTimestamp(timestamp: string): string {
   return Number.isNaN(parsed.getTime()) ? "" : dateTimeFormatter.format(parsed);
 }
 
+const relativeFormatter = new Intl.RelativeTimeFormat("en-US", { numeric: "auto" });
+
+/** "3 years ago", "yesterday", "in 2 months" for a calendar date or timestamp. */
+export function timeAgo(value: string | null | undefined, now = Date.now()): string {
+  if (!value) return "";
+  const time = Date.parse(value.length === 10 ? `${value}T00:00:00Z` : value);
+  if (Number.isNaN(time)) return "";
+  const days = Math.round((time - now) / 86_400_000);
+  if (Math.abs(days) >= 365) return relativeFormatter.format(Math.trunc(days / 365), "year");
+  if (Math.abs(days) >= 30) return relativeFormatter.format(Math.trunc(days / 30), "month");
+  if (Math.abs(days) >= 7) return relativeFormatter.format(Math.trunc(days / 7), "week");
+  return relativeFormatter.format(days, "day");
+}
+
 export function yearOf(date: string | null | undefined): string {
   return date ? date.slice(0, 4) : "";
 }

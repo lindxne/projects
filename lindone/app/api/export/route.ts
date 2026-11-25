@@ -53,7 +53,7 @@ export async function GET(request: Request) {
   // Sign every file in batches, bucket by bucket.
   const origin = new URL(request.url).origin;
   const urls = [
-    ...releases.data.map((release) => release.cover_url),
+    ...releases.data.flatMap((release) => [release.cover_url, release.background_url]),
     ...tracks.data.map((track) => track.audio_url),
     ...posts.data.flatMap((post) => [post.media_url, post.poster_url]),
   ];
@@ -85,6 +85,7 @@ export async function GET(request: Request) {
     releases: releases.data.map((release) => ({
       ...release,
       cover: file(release.cover_url),
+      background: file(release.background_url),
       tracks: tracks.data
         .filter((track) => track.release_id === release.id)
         .map((track) => ({ ...track, audio: file(track.audio_url) })),

@@ -125,6 +125,7 @@ export type Database = {
       };
       releases: {
         Row: {
+          background_url: string | null;
           cover_url: string;
           created_at: string;
           description: string | null;
@@ -137,6 +138,7 @@ export type Database = {
         };
         ComputedFields: never;
         Insert: {
+          background_url?: string | null;
           cover_url: string;
           created_at?: string;
           description?: string | null;
@@ -148,6 +150,7 @@ export type Database = {
           type: string;
         };
         Update: {
+          background_url?: string | null;
           cover_url?: string;
           created_at?: string;
           description?: string | null;

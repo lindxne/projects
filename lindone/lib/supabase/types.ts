@@ -67,7 +67,7 @@ export function isPostTag(value: unknown): value is PostTag {
 }
 
 /** Columns selected everywhere a full row is needed (everything except the tsvector). */
-export const RELEASE_COLUMNS = "id,type,title,cover_url,description,release_date,links,created_at";
+export const RELEASE_COLUMNS = "id,type,title,cover_url,background_url,description,release_date,links,created_at";
 export const TRACK_COLUMNS =
   "id,release_id,title,audio_url,duration_sec,track_number,bpm,musical_key,created_at";
 export const POST_COLUMNS =
