@@ -1,0 +1,353 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --player-height: 84px;
+  --nav-height: 64px;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  /* Player palette, set from the current cover (see PlayerTheme). */
+  --player-bg: 245 245 244;
+  --player-accent: 23 23 23;
+  --player-fg: 17 17 19;
+}
+
+@layer base {
+  html {
+    background: #fafaf9;
+    -webkit-text-size-adjust: 100%;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply min-h-dvh bg-ink font-sans text-mist antialiased;
+    overscroll-behavior-y: none;
+  }
+
+  ::selection {
+    background: rgba(17, 17, 19, 0.12);
+  }
+
+  :focus-visible {
+    outline: 2px solid #111113;
+    outline-offset: 3px;
+    border-radius: 10px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    @apply font-display tracking-tight;
+  }
+
+  /* On body only, so it propagates to the viewport and body scroll locks keep working. */
+  body {
+    overflow-x: clip;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 16px; /* prevents iOS zoom on focus */
+  }
+}
+
+@layer components {
+  /* Light Liquid Glass: frosted white, a thin bright rim and a soft shadow.
+     ::after is a highlight under the cursor, positioned in element coordinates
+     (--lx/--ly, set by LightTracker on the hovered surface). */
+  .glass {
+    --glass-blur: 18px;
+    --glass-tint: rgba(255, 255, 255, 0.62);
+    --glass-radius: 24px;
+    position: relative;
+    isolation: isolate;
+    border-radius: var(--glass-radius);
+    background: var(--glass-tint);
+    -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    backdrop-filter: blur(var(--glass-blur)) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.9),
+      inset 0 0 0 1px rgba(0, 0, 0, 0.06),
+      0 1px 2px rgba(0, 0, 0, 0.04),
+      0 12px 32px -18px rgba(0, 0, 0, 0.18);
+  }
+
+  .glass::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: radial-gradient(240px circle at var(--lx, 50%) var(--ly, 0%), rgba(255, 255, 255, 0.9), transparent 70%);
+    opacity: var(--lo, 0);
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+  }
+
+  .glass-card {
+    --glass-radius: 20px;
+  }
+
+  .glass-strong {
+    --glass-tint: rgba(255, 255, 255, 0.8);
+  }
+
+  .glass-pill {
+    --glass-radius: 999px;
+  }
+
+  .glass-lit {
+    background: #111113;
+    color: #fff;
+    box-shadow: 0 6px 18px -10px rgba(0, 0, 0, 0.5);
+  }
+
+  /* Clear glass over dark artwork (release cards). */
+  .glass-dark {
+    --glass-tint: rgba(255, 255, 255, 0.08);
+    --glass-blur: 28px;
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.32),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.12),
+      0 24px 60px -30px rgba(0, 0, 0, 0.55);
+  }
+
+  .glass-dark::after {
+    background: radial-gradient(260px circle at var(--lx, 50%) var(--ly, 0%), rgba(255, 255, 255, 0.16), transparent 70%);
+  }
+
+  .glass-orb {
+    background: rgba(255, 255, 255, 0.86);
+    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(12px) saturate(180%);
+    box-shadow:
+      inset 0 1px 1px #fff,
+      inset 0 -3px 8px rgba(0, 0, 0, 0.12),
+      0 10px 26px -10px rgba(0, 0, 0, 0.55);
+  }
+
+  .glass-row {
+    border-radius: 14px;
+    transition:
+      background-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .glass-row:hover {
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-row[aria-current="true"] {
+    background: rgba(255, 255, 255, 0.16);
+    -webkit-backdrop-filter: blur(12px) saturate(160%);
+    backdrop-filter: blur(12px) saturate(160%);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.3),
+      inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+  }
+
+  .glass-inset {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    background: rgba(0, 0, 0, 0.025);
+  }
+
+  /* Label placed over media. */
+  .scrim {
+    color: #fff;
+    background: rgba(0, 0, 0, 0.38);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    backdrop-filter: blur(10px) saturate(160%);
+  }
+
+  .glass-input {
+    @apply w-full rounded-2xl px-4 py-3 text-mist placeholder:text-mist-faint;
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    background: #fff;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
+  }
+
+  .glass-input:focus {
+    border-color: rgba(0, 0, 0, 0.45);
+    box-shadow: 0 0 0 4px rgba(0, 0, 0, 0.05);
+    outline: none;
+  }
+
+  .glass-input:focus-visible {
+    outline: 2px solid #111113;
+    outline-offset: 2px;
+  }
+
+  .field-label {
+    @apply mb-1.5 block text-sm font-medium text-mist-muted;
+  }
+
+  .glass-sphere {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+    flex: none;
+    border-radius: 999px;
+    color: currentColor;
+    background: rgba(255, 255, 255, 0.7);
+    -webkit-backdrop-filter: blur(10px) saturate(160%);
+    backdrop-filter: blur(10px) saturate(160%);
+    box-shadow:
+      inset 0 0 0 1px rgba(0, 0, 0, 0.07),
+      0 4px 12px -8px rgba(0, 0, 0, 0.3);
+    transition:
+      background-color 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .glass-sphere:hover {
+    background: #fff;
+  }
+
+  .glass-sphere[data-active="true"] {
+    background: #111113;
+    color: #fff;
+  }
+
+  .glass-sphere:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .chip {
+    @apply inline-flex min-h-[34px] items-center gap-1.5 rounded-full px-3.5 text-sm font-medium text-mist-muted transition-colors;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.09);
+  }
+
+  .chip:hover {
+    @apply text-mist;
+  }
+
+  .chip[aria-pressed="true"],
+  .chip[aria-current="true"],
+  .chip[data-active="true"] {
+    background: #111113;
+    color: #fff;
+    box-shadow: none;
+  }
+}
+
+@layer utilities {
+  .pb-player {
+    padding-bottom: calc(var(--player-height) + var(--safe-bottom) + var(--install-height, 0px) + 2.5rem);
+  }
+
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Player tinted by the current cover (palette from lib/color/palette.ts). */
+.player-themed {
+  --glass-tint: transparent;
+  color: rgb(var(--player-fg));
+  background: linear-gradient(120deg, rgb(var(--player-bg) / 0.94), rgb(var(--player-bg2, var(--player-bg)) / 0.94));
+  transition:
+    background 0.6s ease,
+    color 0.6s ease;
+}
+
+.player-fullscreen {
+  isolation: isolate;
+  background: linear-gradient(160deg, rgb(var(--player-bg)), rgb(var(--player-bg2, var(--player-bg))));
+}
+
+.player-themed .text-mist {
+  color: rgb(var(--player-fg));
+}
+
+.player-themed .text-mist-muted {
+  color: rgb(var(--player-fg) / 0.72);
+}
+
+.player-themed .text-mist-faint {
+  color: rgb(var(--player-fg) / 0.55);
+}
+
+.player-themed .glass-sphere {
+  color: rgb(var(--player-fg));
+  background: rgb(var(--player-fg) / 0.1);
+  box-shadow: none;
+}
+
+.player-themed .glass-sphere:hover {
+  background: rgb(var(--player-fg) / 0.18);
+}
+
+.player-themed .glass-sphere[data-active="true"] {
+  color: rgb(var(--player-bg));
+  background: rgb(var(--player-fg));
+}
+
+.player-themed .bg-black\/\[0\.08\] {
+  background: rgb(var(--player-fg) / 0.2);
+}
+
+.logo-mark {
+  display: inline-flex;
+  align-items: flex-start;
+  font-family: var(--font-logo), "Arial Black", sans-serif;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: #1f5c34;
+  -webkit-text-stroke: 0.035em #07160c;
+  paint-order: stroke fill;
+  text-shadow: 0.06em 0.06em 0 #07160c;
+  padding: 0 0.08em 0.12em 0;
+}
+
+.logo-mark > span {
+  display: inline-block;
+}
+
+.logo-pop > span {
+  opacity: 0;
+  animation: logo-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.logo-pop > span:nth-child(2) { animation-delay: 0.05s; }
+.logo-pop > span:nth-child(3) { animation-delay: 0.1s; }
+.logo-pop > span:nth-child(4) { animation-delay: 0.15s; }
+.logo-pop > span:nth-child(5) { animation-delay: 0.2s; }
+.logo-pop > span:nth-child(6) { animation-delay: 0.25s; }
+.logo-pop > span:nth-child(7) { animation-delay: 0.3s; }
+
+@keyframes logo-pop {
+  from { opacity: 0; translate: 0 0.3em; }
+  to { opacity: 1; translate: 0 0; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .logo-pop > span {
+    opacity: 1;
+    animation: none;
+  }
+}
