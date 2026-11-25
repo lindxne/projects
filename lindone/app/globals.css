@@ -42,7 +42,7 @@
     @apply font-display tracking-tight;
   }
 
-  html,
+  /* On body only, so it propagates to the viewport and body scroll locks keep working. */
   body {
     overflow-x: clip;
   }
