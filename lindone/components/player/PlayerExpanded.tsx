@@ -133,14 +133,14 @@ export function PlayerExpanded() {
           </div>
 
           <div className="mx-auto flex min-h-0 w-full max-w-6xl flex-1 flex-col md:grid md:grid-cols-[minmax(0,1fr)_minmax(0,380px)] md:gap-14 md:pt-8">
-            <div className="flex min-h-0 flex-1 flex-col md:justify-center">
+            <div className="flex min-h-0 flex-1 flex-col md:justify-center md:overflow-y-auto">
               <div className="flex min-h-0 flex-1 items-center justify-center py-5 md:flex-none md:py-0">
                 <motion.div
                   key={track.id}
                   initial={{ scale: 0.86, opacity: 0 }}
                   animate={{ scale: 1, opacity: 1 }}
                   transition={{ type: "spring", stiffness: 240, damping: 22 }}
-                  className="aspect-square h-full max-h-[min(100%,calc(100vw-48px))] max-w-full md:h-[min(52vh,520px)] md:max-h-none"
+                  className="aspect-square h-full max-h-[min(100%,calc(100vw-48px))] max-w-full md:h-[clamp(160px,calc(100dvh-440px),520px)] md:max-h-none"
                 >
                   <CoverArt
                     src={track.coverUrl}
