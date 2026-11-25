@@ -79,7 +79,20 @@ export function PlayerBar() {
           {/* Desktop: three zones. */}
           <div className="hidden h-[84px] grid-cols-[minmax(0,1fr)_minmax(0,1.5fr)_minmax(0,1fr)] items-center gap-6 px-4 md:grid">
             <div className="flex min-w-0 items-center gap-3.5">
-              <CoverArt src={track?.coverUrl ?? null} alt="" className="w-[58px] flex-none rounded-2xl" sizes={116} />
+              <button
+                type="button"
+                onClick={() => track && setExpanded(true)}
+                disabled={!track}
+                aria-label="Open full-screen player"
+                className="group/cover relative flex-none rounded-2xl"
+              >
+                <CoverArt src={track?.coverUrl ?? null} alt="" className="w-[58px] rounded-2xl" sizes={116} />
+                {track ? (
+                  <span className="absolute inset-0 grid place-items-center rounded-2xl bg-black/35 text-white opacity-0 transition-opacity group-hover/cover:opacity-100 group-focus-visible/cover:opacity-100">
+                    <ChevronUpIcon size={18} />
+                  </span>
+                ) : null}
+              </button>
               <div className="min-w-0">
                 {track ? (
                   <Link href={`/releases/${track.releaseId}`} className="block truncate font-semibold text-mist hover:underline">
@@ -110,6 +123,9 @@ export function PlayerBar() {
               <VolumeSlider className="w-28" />
               <GlassSphere label={`Queue: ${queueLength}`} size={38} onClick={() => setQueueOpen(true)}>
                 <QueueIcon size={17} />
+              </GlassSphere>
+              <GlassSphere label="Full-screen player" size={38} disabled={!track} onClick={() => setExpanded(true)}>
+                <ChevronUpIcon size={17} />
               </GlassSphere>
             </div>
           </div>

@@ -226,6 +226,11 @@
     color 0.6s ease;
 }
 
+.player-fullscreen {
+  isolation: isolate;
+  background: linear-gradient(160deg, rgb(var(--player-bg)), rgb(var(--player-bg2, var(--player-bg))));
+}
+
 .player-themed .text-mist {
   color: rgb(var(--player-fg));
 }
