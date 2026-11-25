@@ -1,6 +1,6 @@
 "use client";
 
-import { POST_TAG_LABEL, type Post } from "@/lib/supabase/types";
+import type { Post } from "@/lib/supabase/types";
 import { formatTimestamp } from "@/lib/utils/format";
 import { LazyVideo } from "./LazyVideo";
 
@@ -28,17 +28,12 @@ export function PostCard({ post, onOpen, priority = false }: { post: Post; onOpe
           </button>
         )}
       </div>
-      <div className="grid gap-1.5 px-1 pt-3">
+      <div className="glass glass-card mt-2.5 grid gap-1.5 px-4 py-3">
         {post.caption ? <p className="line-clamp-4 whitespace-pre-line break-words text-[15px] leading-relaxed text-mist">{post.caption}</p> : null}
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1.5 text-sm text-mist-muted">
           <button type="button" onClick={() => onOpen(post)} className="rounded-md underline-offset-4 hover:underline">
             <time dateTime={post.created_at}>{formatTimestamp(post.created_at)}</time>
           </button>
-          {post.tags.map((tag) => (
-            <span key={tag} className="text-mist">
-              #{POST_TAG_LABEL[tag]}
-            </span>
-          ))}
         </div>
       </div>
     </article>

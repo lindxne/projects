@@ -9,12 +9,11 @@ import { UploadProgress } from "@/components/ui/UploadProgress";
 import { resizeToMax } from "@/lib/image/resize";
 import { createClient } from "@/lib/supabase/client";
 import { MAX_UPLOAD_MB, UploadError, assertUploadSize, removeMedia, uploadFile } from "@/lib/supabase/storage";
-import type { PostInsert, PostTag } from "@/lib/supabase/types";
+import type { PostInsert } from "@/lib/supabase/types";
 import { SaveError, describeDbError, describeError } from "@/lib/utils/errors";
 import { cx, plural } from "@/lib/utils/format";
 import { MAX_VIDEO_SECONDS, processVideo, type VideoProgress } from "@/lib/video/ffmpeg";
 import { LinkPicker, type PostLink } from "./LinkPicker";
-import { TagPicker } from "./TagPicker";
 
 interface Item {
   key: string;
@@ -57,7 +56,6 @@ export function UploadForm() {
   const router = useRouter();
   const [items, setItems] = useState<Item[]>([]);
   const [caption, setCaption] = useState("");
-  const [tags, setTags] = useState<PostTag[]>([]);
   const [link, setLink] = useState<PostLink>({ releaseId: null, trackId: null });
   const [date, setDate] = useState("");
   const [dragOver, setDragOver] = useState(false);
@@ -114,7 +112,6 @@ export function UploadForm() {
         media_url: "",
         media_type: item.kind,
         caption: caption.trim() || null,
-        tags,
         release_id: link.releaseId,
         track_id: link.trackId,
         created_at: timestampFor(date),
@@ -300,10 +297,6 @@ export function UploadForm() {
             maxLength={2200}
             disabled={busy}
           />
-        </div>
-        <div>
-          <span className="field-label">Tags</span>
-          <TagPicker value={tags} onChange={setTags} disabled={busy} />
         </div>
         <LinkPicker value={link} onChange={setLink} disabled={busy} />
         <div>

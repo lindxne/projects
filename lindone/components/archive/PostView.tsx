@@ -7,11 +7,10 @@ import { DiscIcon, EditIcon, TrashIcon } from "@/components/ui/icons";
 import { usePlayer } from "@/lib/audio/player-store";
 import { createClient } from "@/lib/supabase/client";
 import { removeMedia } from "@/lib/supabase/storage";
-import { POST_COLUMNS, POST_TAG_LABEL, toPost, type Post, type PostTag } from "@/lib/supabase/types";
+import { POST_COLUMNS, toPost, type Post } from "@/lib/supabase/types";
 import { describeDbError } from "@/lib/utils/errors";
 import { formatTimestamp } from "@/lib/utils/format";
 import { LinkPicker, type PostLink } from "./LinkPicker";
-import { TagPicker } from "./TagPicker";
 
 interface PostViewProps {
   post: Post;
@@ -25,12 +24,11 @@ interface Linked {
   trackTitle: string | null;
 }
 
-/** Full post: clean media, then caption, tags, the linked release / track and actions. */
+/** Full post: clean media, then caption, the linked release / track and actions. */
 export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
   const [linked, setLinked] = useState<Linked | null>(null);
   const [mode, setMode] = useState<"view" | "edit" | "delete">("view");
   const [caption, setCaption] = useState(post.caption ?? "");
-  const [tags, setTags] = useState<PostTag[]>(post.tags);
   const [link, setLink] = useState<PostLink>({ releaseId: post.release_id, trackId: post.track_id });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -58,7 +56,6 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
 
   const cancel = () => {
     setCaption(post.caption ?? "");
-    setTags(post.tags);
     setLink({ releaseId: post.release_id, trackId: post.track_id });
     setError(null);
     setMode("view");
@@ -69,7 +66,7 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
     setError(null);
     const { data, error: updateError } = await createClient()
       .from("posts")
-      .update({ caption: caption.trim() || null, tags, release_id: link.releaseId, track_id: link.trackId })
+      .update({ caption: caption.trim() || null, release_id: link.releaseId, track_id: link.trackId })
       .eq("id", post.id)
       .select(POST_COLUMNS)
       .single();
@@ -135,7 +132,6 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
                 disabled={busy}
               />
             </div>
-            <TagPicker value={tags} onChange={setTags} disabled={busy} />
             <LinkPicker value={link} onChange={setLink} disabled={busy} />
           </>
         ) : (
@@ -144,15 +140,6 @@ export function PostView({ post, onUpdated, onDeleted }: PostViewProps) {
               <time dateTime={post.created_at}>{formatTimestamp(post.created_at)}</time>
             </p>
             {post.caption ? <p className="whitespace-pre-line break-words text-[15px] leading-relaxed text-mist">{post.caption}</p> : null}
-            {post.tags.length > 0 ? (
-              <ul className="flex flex-wrap gap-2" aria-label="Tags">
-                {post.tags.map((tag) => (
-                  <li key={tag}>
-                    <span className="chip !min-h-[32px] !px-3 text-xs">#{POST_TAG_LABEL[tag]}</span>
-                  </li>
-                ))}
-              </ul>
-            ) : null}
             {linked ? (
               <Link
                 href={`/releases/${linked.releaseId}`}

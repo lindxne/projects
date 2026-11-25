@@ -16,7 +16,7 @@ const CATEGORIES = [
   { label: "videos", href: "/?filter=videos", filter: "videos" },
 ] as const;
 
-const ICON_LINK = "grid h-10 w-10 place-items-center rounded-full text-mist-muted transition-colors hover:bg-black/5 hover:text-mist";
+const ICON_LINK = "glass-sphere h-10 w-10 text-mist-muted hover:text-mist";
 const MENU_ITEM = "flex min-h-[44px] w-full items-center gap-3 rounded-xl px-3 text-left text-[15px] text-mist hover:bg-black/5";
 
 function Categories() {
