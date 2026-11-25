@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Titan_One } from "next/font/google";
 import "./globals.css";
 
 const body = Inter({
@@ -12,6 +12,13 @@ const display = Inter({
   subsets: ["latin"],
   weight: ["500", "600", "700"],
   variable: "--font-display",
+  display: "swap",
+});
+
+const logo = Titan_One({
+  subsets: ["latin"],
+  weight: "400",
+  variable: "--font-logo",
   display: "swap",
 });
 
@@ -41,7 +48,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className={`${body.variable} ${display.variable}`}>
+    <html lang="en" className={`${body.variable} ${display.variable} ${logo.variable}`}>
       <body>{children}</body>
     </html>
   );

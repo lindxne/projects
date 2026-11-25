@@ -257,36 +257,42 @@
   background: rgb(var(--player-fg) / 0.2);
 }
 
-.logo-draw path {
-  stroke-dasharray: 1;
-  stroke-dashoffset: 1;
-  animation: logo-draw 1.6s cubic-bezier(0.65, 0, 0.35, 1) 0.1s forwards;
+.logo-mark {
+  display: inline-flex;
+  align-items: flex-start;
+  font-family: var(--font-logo), "Arial Black", sans-serif;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: #1f5c34;
+  -webkit-text-stroke: 0.035em #07160c;
+  paint-order: stroke fill;
+  text-shadow: 0.06em 0.06em 0 #07160c;
+  padding: 0 0.08em 0.12em 0;
 }
 
-.logo-draw .logo-dot {
+.logo-mark > span {
+  display: inline-block;
+}
+
+.logo-pop > span {
   opacity: 0;
-  animation: logo-dot 0.3s ease 1.5s forwards;
+  animation: logo-pop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-@keyframes logo-draw {
-  to {
-    stroke-dashoffset: 0;
-  }
-}
+.logo-pop > span:nth-child(2) { animation-delay: 0.05s; }
+.logo-pop > span:nth-child(3) { animation-delay: 0.1s; }
+.logo-pop > span:nth-child(4) { animation-delay: 0.15s; }
+.logo-pop > span:nth-child(5) { animation-delay: 0.2s; }
+.logo-pop > span:nth-child(6) { animation-delay: 0.25s; }
+.logo-pop > span:nth-child(7) { animation-delay: 0.3s; }
 
-@keyframes logo-dot {
-  to {
-    opacity: 1;
-  }
+@keyframes logo-pop {
+  from { opacity: 0; translate: 0 0.3em; }
+  to { opacity: 1; translate: 0 0; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .logo-draw path {
-    stroke-dashoffset: 0;
-    animation: none;
-  }
-
-  .logo-draw .logo-dot {
+  .logo-pop > span {
     opacity: 1;
     animation: none;
   }

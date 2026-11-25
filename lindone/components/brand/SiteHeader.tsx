@@ -82,7 +82,7 @@ export function SiteHeader() {
     <>
       <header className="relative mx-auto flex w-full max-w-6xl flex-col items-center px-4 pt-[calc(var(--safe-top)+28px)] md:pt-[calc(var(--safe-top)+40px)]">
         <Link href="/" aria-label="lindone — home" className="rounded-xl text-mist">
-          <Logo animate className="w-[150px] md:w-[188px]" />
+          <Logo animate className="mb-3 text-[44px] md:mb-4 md:text-[58px]" />
         </Link>
 
         <div className="absolute right-3 top-[calc(var(--safe-top)+14px)] flex items-center gap-0.5 md:right-5 md:top-[calc(var(--safe-top)+22px)]">

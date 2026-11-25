@@ -19,7 +19,7 @@ export default async function LoginPage({
   return (
     <main className="relative grid min-h-dvh place-items-center px-5 py-10">
       <section className="glass glass-strong relative z-10 w-full max-w-sm p-7 xs:p-8">
-        <Logo className="w-[132px] text-mist" />
+        <Logo className="text-[34px]" />
         <h1 className="mt-2 text-2xl font-bold text-mist">Sign in</h1>
         <p className="mb-6 mt-2 text-sm leading-relaxed text-mist-muted">
           Private space. A sign-in link will be sent to the owner&apos;s email.
